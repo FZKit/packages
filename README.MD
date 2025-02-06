@@ -1,4 +1,4 @@
-# todo
+## todo
 
 - [x] basic setup with one package and one app example
 - [ ] setup tests
@@ -6,9 +6,9 @@
   - [ ] test package versioning
   - [ ] test ci
 
-# roadmap
+## roadmap
 
-## v1
+### v1
 
 - [ ] base utilities
   - [ ] base plugin creation
