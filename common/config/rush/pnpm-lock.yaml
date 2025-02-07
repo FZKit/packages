@@ -8,9 +8,9 @@ importers:
 
   .: {}
 
-  ../../apps/base-example:
+  ../../examples/base-example:
     dependencies:
-      '@fastify-kit/base':
+      '@fzkit/base':
         specifier: workspace:*
         version: link:../../libraries/base
       fastify:

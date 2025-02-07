@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fastify-kit/base": "workspace:*",
+    "@fzkit/base": "workspace:*",
     "fastify": "~5.2.1"
   },
   "devDependencies": {

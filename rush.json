@@ -331,12 +331,12 @@
    */
   "projects": [
     {
-      "packageName": "@fastify-kit/base",
+      "packageName": "@fzkit/base",
       "projectFolder": "libraries/base"
     },
     {
       "packageName": "base-example",
-      "projectFolder": "apps/base-example"
+      "projectFolder": "examples/base-example"
     }
     // {
     //   /**

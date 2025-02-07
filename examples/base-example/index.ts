@@ -1,5 +1,5 @@
 import Fastify, { FastifyInstance } from "fastify";
-import { FastifyPlugin, createPlugin } from "@fastify-kit/base/plugin";
+import { FastifyPlugin, createPlugin } from "@fzkit/base/plugin";
 
 export interface BaseExamplePluginInstance extends FastifyInstance {}
 
