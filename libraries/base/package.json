@@ -8,6 +8,7 @@
   "exports": {
     ".": {
       "source": "./src/index.ts",
+      "default": "./src/index.ts",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
@@ -19,6 +20,7 @@
     },
     "./plugin": {
       "source": "./src/plugin.ts",
+      "default": "./src/plugin.ts",
       "import": {
         "types": "./dist/plugin.d.ts",
         "default": "./dist/plugin.js"
@@ -26,6 +28,18 @@
       "require": {
         "types": "./dist/plugin.d.cts",
         "default": "./dist/plugin.cjs"
+      }
+    },
+    "./http-client": {
+      "source": "./src/http-client.ts",
+      "default": "./src/http-client.ts",
+      "import": {
+        "types": "./dist/http-client.d.ts",
+        "default": "./dist/http-client.js"
+      },
+      "require": {
+        "types": "./dist/http-client.d.cts",
+        "default": "./dist/http-client.cjs"
       }
     }
   },
