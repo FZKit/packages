@@ -34,7 +34,7 @@
     "dts": true,
     "format": [
       "esm",
-      "js"
+      "cjs"
     ],
     "treeshake": true
   },
@@ -53,7 +53,6 @@
   "publishConfig": {
     "exports": {
       ".": {
-        "source": "./src/index.ts",
         "import": {
           "types": "./dist/index.d.mts",
           "default": "./dist/index.mjs"
@@ -64,7 +63,6 @@
         }
       },
       "./plugin": {
-        "source": "./src/plugin.ts",
         "import": {
           "types": "./dist/plugin.d.mts",
           "default": "./dist/plugin.mjs"
@@ -75,7 +73,6 @@
         }
       },
       "./http-client": {
-        "source": "./src/http-client.ts",
         "import": {
           "types": "./dist/http-client.d.mts",
           "default": "./dist/http-client.mjs"
