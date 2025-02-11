@@ -2,7 +2,7 @@
   "name": "base-example",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "type": "module",
   "scripts": {
     "dev": "tsx --watch index.ts"

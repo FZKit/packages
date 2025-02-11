@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  ../../examples/base-example:
+  ../../examples/base:
     dependencies:
       '@fzkit/base':
         specifier: workspace:*
