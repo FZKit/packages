@@ -8,38 +8,14 @@
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "import": {
-        "types": "./dist/index.d.mts",
-        "default": "./dist/index.mjs"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "default": "./src/index.ts"
+      "default": "./src/plugin.ts"
     },
     "./plugin": {
       "source": "./src/plugin.ts",
-      "import": {
-        "types": "./dist/plugin.d.mts",
-        "default": "./dist/plugin.mjs"
-      },
-      "require": {
-        "types": "./dist/plugin.d.ts",
-        "default": "./dist/plugin.js"
-      },
       "default": "./src/plugin.ts"
     },
     "./http-client": {
       "source": "./src/http-client.ts",
-      "import": {
-        "types": "./dist/http-client.d.mts",
-        "default": "./dist/http-client.mjs"
-      },
-      "require": {
-        "types": "./dist/http-client.d.ts",
-        "default": "./dist/http-client.js"
-      },
       "default": "./src/http-client.ts"
     }
   },
@@ -58,7 +34,7 @@
     "dts": true,
     "format": [
       "esm",
-      "cjs"
+      "js"
     ],
     "treeshake": true
   },
@@ -73,5 +49,42 @@
     "@types/node": "~22.13.1",
     "tsup": "~8.3.6",
     "typescript": "~5.7.3"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "source": "./src/index.ts",
+        "import": {
+          "types": "./dist/index.d.mts",
+          "default": "./dist/index.mjs"
+        },
+        "require": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
+        }
+      },
+      "./plugin": {
+        "source": "./src/plugin.ts",
+        "import": {
+          "types": "./dist/plugin.d.mts",
+          "default": "./dist/plugin.mjs"
+        },
+        "require": {
+          "types": "./dist/plugin.d.ts",
+          "default": "./dist/plugin.js"
+        }
+      },
+      "./http-client": {
+        "source": "./src/http-client.ts",
+        "import": {
+          "types": "./dist/http-client.d.mts",
+          "default": "./dist/http-client.mjs"
+        },
+        "require": {
+          "types": "./dist/http-client.d.ts",
+          "default": "./dist/http-client.js"
+        }
+      }
+    }
   }
 }
