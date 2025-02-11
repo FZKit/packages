@@ -2,52 +2,65 @@
   "name": "@fzkit/base",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.cjs",
+  "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "default": "./src/index.ts",
       "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
       },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+      "default": "./src/index.ts"
     },
     "./plugin": {
       "source": "./src/plugin.ts",
-      "default": "./src/plugin.ts",
       "import": {
+        "types": "./dist/plugin.d.mts",
+        "default": "./dist/plugin.mjs"
+      },
+      "require": {
         "types": "./dist/plugin.d.ts",
         "default": "./dist/plugin.js"
       },
-      "require": {
-        "types": "./dist/plugin.d.cts",
-        "default": "./dist/plugin.cjs"
-      }
+      "default": "./src/plugin.ts"
     },
     "./http-client": {
       "source": "./src/http-client.ts",
-      "default": "./src/http-client.ts",
       "import": {
+        "types": "./dist/http-client.d.mts",
+        "default": "./dist/http-client.mjs"
+      },
+      "require": {
         "types": "./dist/http-client.d.ts",
         "default": "./dist/http-client.js"
       },
-      "require": {
-        "types": "./dist/http-client.d.cts",
-        "default": "./dist/http-client.cjs"
-      }
+      "default": "./src/http-client.ts"
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/**/*.ts --format esm,cjs --dts --treeshake"
+    "build": "tsup"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts",
+      "src/**/*.ts"
+    ],
+    "clean": true,
+    "dts": true,
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "treeshake": true
   },
   "keywords": [],
   "author": "",

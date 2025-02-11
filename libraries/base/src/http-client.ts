@@ -28,11 +28,10 @@ class HttpClient {
       };
     }
     const response = await fetch(urlWithParams, options);
-    const data = await response.json();
     if (!response.ok) {
       throw new HttpClientException(response);
     }
-    return response;
+    return response as HttpResponse<R>;
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: this is a fallback type
