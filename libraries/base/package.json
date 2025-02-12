@@ -8,7 +8,7 @@
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "default": "./src/plugin.ts"
+      "default": "./src/index.ts"
     },
     "./plugin": {
       "source": "./src/plugin.ts",

@@ -1,2 +1,7 @@
-export * from "./plugin";
-export * from "./http-client";
+export { FastifyPlugin, createPlugin } from "./plugin";
+export {
+	HttpClientException,
+	HttpClientOptions,
+	HttpResponse,
+	httpClient,
+} from "./http-client";
