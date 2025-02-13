@@ -1,0 +1,55 @@
+{
+  "name": "FZKit",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+  "features": {
+    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
+      "plugins": "git zsh-autosuggestions",
+      "theme": "avit"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20.14.0",
+      "pnpmVersion": "8.15.8"
+    },
+    "ghcr.io/devcontainers-extra/features/zsh-plugins:0": {
+      "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions"
+    }
+  },
+  "remoteUser": "root",
+  "forwardPorts": [
+    3000
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
+  ],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.watcherExclude": {
+          "**/.git/objects/**": true,
+          "**/.git/subtree-cache/**": true,
+          "**/node_modules/*/**": true,
+          "**/out/**": true,
+          "**/dist/**": true,
+          "**/logs/**": true
+        }
+      },
+      "extensions": [
+        "biomejs.biome",
+        "DavidAnson.vscode-markdownlint",
+        "eamodio.gitlens",
+        "EditorConfig.EditorConfig",
+        "GitHub.copilot",
+        "mikestead.dotenv",
+        "natqe.reload",
+        "pflannery.vscode-versionlens",
+        "redhat.vscode-yaml",
+        "streetsidesoftware.code-spell-checker-portuguese-brazilian",
+        "streetsidesoftware.code-spell-checker",
+        "unional.vscode-sort-package-json",
+        "usernamehw.errorlens",
+        "wix.vscode-import-cost"
+      ]
+    }
+  },
+  "postCreateCommand": "./.devcontainer/postCreateCommand.sh"
+}
