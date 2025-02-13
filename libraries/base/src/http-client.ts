@@ -15,15 +15,12 @@ export class HttpClientException extends Error {
 
 class HttpClient {
   // biome-ignore lint/suspicious/noExplicitAny: this is a fallback type
-  async request<R = any>(
-    url: string,
-    options: HttpClientOptions = {}
-  ): Promise<HttpResponse<R>> {
+  async request<R = any>(url: string, options: HttpClientOptions = {}): Promise<HttpResponse<R>> {
     const paramsToString = new URLSearchParams(options?.params).toString();
     const urlWithParams = paramsToString ? `${url}?${paramsToString}` : url;
-    if (options.body && typeof options.body === "string") {
+    if (options.body && typeof options.body === 'string') {
       options.headers = {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...options.headers,
       };
     }
@@ -37,20 +34,20 @@ class HttpClient {
   // biome-ignore lint/suspicious/noExplicitAny: this is a fallback type
   get<R = any>(
     url: string,
-    options?: Omit<HttpClientOptions, "body" | "method">
+    options?: Omit<HttpClientOptions, 'body' | 'method'>,
   ): Promise<HttpResponse<R>> {
-    return this.request<R>(url, { ...options, method: "GET" });
+    return this.request<R>(url, { ...options, method: 'GET' });
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: this is a fallback type
   post<T = any, R = any>(
     url: string,
     body: T,
-    options?: Omit<HttpClientOptions, "body" | "method">
+    options?: Omit<HttpClientOptions, 'body' | 'method'>,
   ): Promise<HttpResponse<R>> {
     return this.request<R>(url, {
       ...options,
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(body),
     });
   }
@@ -59,11 +56,11 @@ class HttpClient {
   put<T = any, R = any>(
     url: string,
     body: T,
-    options?: Omit<HttpClientOptions, "body" | "method">
+    options?: Omit<HttpClientOptions, 'body' | 'method'>,
   ): Promise<HttpResponse<R>> {
     return this.request<R>(url, {
       ...options,
-      method: "PUT",
+      method: 'PUT',
       body: JSON.stringify(body),
     });
   }
@@ -72,11 +69,11 @@ class HttpClient {
   patch<T = any, R = any>(
     url: string,
     body: T,
-    options?: Omit<HttpClientOptions, "body" | "method">
+    options?: Omit<HttpClientOptions, 'body' | 'method'>,
   ): Promise<HttpResponse<R>> {
     return this.request<R>(url, {
       ...options,
-      method: "PATCH",
+      method: 'PATCH',
       body: JSON.stringify(body),
     });
   }
@@ -84,9 +81,9 @@ class HttpClient {
   // biome-ignore lint/suspicious/noExplicitAny: this is a fallback type
   delete<R = any>(
     url: string,
-    options?: Omit<HttpClientOptions, "body" | "method">
+    options?: Omit<HttpClientOptions, 'body' | 'method'>,
   ): Promise<HttpResponse<R>> {
-    return this.request<R>(url, { ...options, method: "DELETE" });
+    return this.request<R>(url, { ...options, method: 'DELETE' });
   }
 }
 

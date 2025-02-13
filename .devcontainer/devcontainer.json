@@ -15,12 +15,8 @@
     }
   },
   "remoteUser": "root",
-  "forwardPorts": [
-    3000
-  ],
-  "mounts": [
-    "source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"
-  ],
+  "forwardPorts": [3000],
+  "mounts": ["source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached"],
   "customizations": {
     "vscode": {
       "settings": {

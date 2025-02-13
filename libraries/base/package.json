@@ -37,23 +37,15 @@
       }
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsup"
   },
   "tsup": {
-    "entry": [
-      "src/index.ts",
-      "src/**/*.ts"
-    ],
+    "entry": ["src/index.ts", "src/**/*.ts"],
     "clean": true,
     "dts": true,
-    "format": [
-      "esm",
-      "cjs"
-    ],
+    "format": ["esm", "cjs"],
     "treeshake": true
   },
   "keywords": [],

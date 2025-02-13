@@ -8,9 +8,7 @@ if (pathIndex !== -1 && args.length > pathIndex + 1) {
   path = args[pathIndex + 1];
 }
 
-const filteredArgs = args.filter(
-  (arg, index) => index !== pathIndex && index !== pathIndex + 1
-);
+const filteredArgs = args.filter((_, index) => pathIndex > -1 ? index !== pathIndex && index !== pathIndex + 1 : true);
 
 const command = `biome check ${path} ${filteredArgs.join(" ")}`.trim();
 
