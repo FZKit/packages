@@ -1,10 +1,10 @@
-# Fastify Kit
+# FZKit
 
-Fastify Kit is a collection of utilities and plugins to help you build fast and reliable Fastify applications.
+FZKit is a collection of utilities and plugins to help you build fast and reliable Fastify applications.
 
 ## Setup
 
-To get started with Fastify Kit, you need to install the following global dependencies:
+To get started with FZKit, you need to install the following global dependencies:
 
 1. **Biome**: A code formatter and linter.
 2. **Rush**: A scalable monorepo manager for JavaScript.
@@ -28,7 +28,7 @@ rush install
 
 3. Start coding:
 
-You can now start coding and developing your Fastify applications using the utilities and plugins provided by Fastify Kit.
+You can now start coding and developing your Fastify applications using the utilities and plugins provided by FZKit.
 
 ## Commands
 
@@ -49,4 +49,4 @@ We welcome contributions from the community! If you want to contribute, please f
 4. Push your changes to your forked repository.
 5. Create a pull request to the main repository.
 
-Thank you for contributing to Fastify Kit!
+Thank you for contributing to FZKit!
