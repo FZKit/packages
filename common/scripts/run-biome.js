@@ -12,7 +12,7 @@ const filteredArgs = args.filter(
   (arg, index) => index !== pathIndex && index !== pathIndex + 1
 );
 
-const command = `pnpm biome check ${path} ${filteredArgs.join(" ")}`.trim();
+const command = `biome check ${path} ${filteredArgs.join(" ")}`.trim();
 
 try {
   execSync(command, { stdio: "inherit", shell: true });
