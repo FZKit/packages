@@ -36,8 +36,9 @@ Here are some useful commands to help you during development:
 
 - **Install dependencies**: `rush install`
 - **Build the project**: `rush build`
-- **Format code**: `biome format`
-- **Lint code**: `biome lint`
+- **Watch packages modifications**: `rush build:watch -t tag:pkg`
+- **Check code format and linting**: `rush biome`
+- **Apply format and code lint**: `rush biome:write`
 
 ## Contributing
 
