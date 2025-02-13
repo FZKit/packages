@@ -21,11 +21,11 @@ export abstract class FZKitPlugin<
 				} catch (error) {
 					scope.log.error(
 						error,
-						`Error registering "${this.constructor.name}" plugin`,
+						`Error registering "${this.constructor.name}"`,
 					);
 					throw error;
 				}
-				scope.log.info(`[${this.constructor.name}] plugin registered`);
+				scope.log.info(`[${this.constructor.name}] registered`);
 			},
 			{
 				name: this.constructor.name,
