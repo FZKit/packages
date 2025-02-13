@@ -1,9 +1,9 @@
-import { FastifyPlugin, createPlugin } from "@fzkit/base/plugin";
+import { FZKitPlugin, createFastifyPlugin } from "@fzkit/base/plugin";
 import Fastify, { type FastifyInstance } from "fastify";
 
 export interface BaseExamplePluginInstance extends FastifyInstance {}
 
-export class BaseExamplePlugin extends FastifyPlugin<BaseExamplePluginInstance> {
+export class BaseExamplePlugin extends FZKitPlugin<BaseExamplePluginInstance> {
 	protected plugin(
 		scope: BaseExamplePluginInstance,
 		options?: Record<never, never> | undefined,
@@ -16,7 +16,7 @@ export class BaseExamplePlugin extends FastifyPlugin<BaseExamplePluginInstance> 
 	}
 }
 const fastify = Fastify({ logger: true });
-fastify.register(createPlugin(BaseExamplePlugin));
+fastify.register(createFastifyPlugin(BaseExamplePlugin));
 
 const start = async () => {
 	try {
