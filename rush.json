@@ -332,7 +332,8 @@
   "projects": [
     {
       "packageName": "@fzkit/base",
-      "projectFolder": "libraries/base"
+      "projectFolder": "libraries/base",
+      "tags": ["pkg"]
     },
     {
       "packageName": "base-example",
