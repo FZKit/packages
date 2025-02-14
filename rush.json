@@ -336,8 +336,17 @@
       "tags": ["pkg"]
     },
     {
+      "packageName": "@fzkit/oauth2-clients",
+      "projectFolder": "libraries/oauth2-clients",
+      "tags": ["pkg"]
+    },
+    {
       "packageName": "base-example",
       "projectFolder": "examples/base"
+    },
+    {
+      "packageName": "oauth2-clients-example",
+      "projectFolder": "examples/oauth2-clients"
     }
     // {
     //   /**
