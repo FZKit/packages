@@ -4,9 +4,10 @@ import Fastify from 'fastify';
 const fastify = Fastify({ logger: true });
 fastify.register(OAuth2GlobalConfigPlugin, {
   redirectOnHandle: true,
-  async dataProcessor(data) {
+  async dataProcessor({ data, reply, request }) {
     // process data, save to database, etc
     console.log(data);
+    reply.send(data);
   },
 });
 fastify.register(GoogleOAuth2Plugin, {

@@ -1,5 +1,5 @@
 import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { createPageTemplate } from './assets/page-template';
 import type { UserData } from './user-data';
 
@@ -21,7 +21,15 @@ export interface OAuth2GlobalConfigOptions {
         successPath: string;
         failurePath: string;
       };
-  dataProcessor?: (data: UserData) => Promise<void>;
+  dataProcessor?: ({
+    data,
+    request,
+    reply,
+  }: {
+    data: UserData;
+    request: FastifyRequest;
+    reply: FastifyReply;
+  }) => Promise<void>;
 }
 
 export interface OAuth2GlobalConfigInstance extends FastifyInstance {
@@ -29,7 +37,15 @@ export interface OAuth2GlobalConfigInstance extends FastifyInstance {
   failureRedirectPath?: string;
   failureException?: Error;
   setFailureException: (exception: Error) => void;
-  dataProcessor?: (data: UserData) => Promise<void>;
+  dataProcessor?: ({
+    data,
+    request,
+    reply,
+  }: {
+    data: UserData;
+    request: FastifyRequest;
+    reply: FastifyReply;
+  }) => Promise<void>;
 }
 
 export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<

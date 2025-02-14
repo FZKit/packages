@@ -52,9 +52,11 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
         });
         const data = await response.json();
         await scope.dataProcessor?.({
-          basicInfo: data,
-          provider: 'google',
+          data: { basicInfo: data, provider: 'google' },
+          request,
+          reply,
         });
+        if (reply.sent) return;
         if (scope.successRedirectPath) {
           return reply.redirect(scope.successRedirectPath);
         }
