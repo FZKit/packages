@@ -1,9 +1,37 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import fastifyCookie from '@fastify/cookie';
 import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { createPageTemplate } from './assets/page-template';
 import type { UserData } from './user-data';
 
-export interface OAuth2GlobalConfigOptions {
+interface CommonOptions {
+  applicationUrl: string;
+  dataProcessor?: ({
+    data,
+    request,
+    reply,
+    sseDispatcher,
+  }: {
+    data: UserData;
+    request: FastifyRequest;
+    reply: FastifyReply;
+    sseDispatcher: (data: Record<string, unknown>) => void;
+  }) => Promise<void>;
+  errorProcessor?: ({
+    error,
+    request,
+    reply,
+    sseDispatcher,
+  }: {
+    error: Error;
+    request: FastifyRequest;
+    reply: FastifyReply;
+    sseDispatcher: (data: Record<string, unknown>) => void;
+  }) => Promise<void>;
+}
+
+export interface OAuth2GlobalConfigOptions extends CommonOptions {
   /**
    * That can be used to redirect the user after the OAuth2 flow instead of returning the data.
    *
@@ -11,41 +39,25 @@ export interface OAuth2GlobalConfigOptions {
    * - /oauth2/success
    * - /oauth2/failure
    *
-   * If set to an object, the plugin will create the routes with the paths defined in the object.
+   * If you want to redirect the user to a different path, you can set this to false and create your own routes and redirect on process data.
    *
    * @default undefined
    */
-  redirectOnHandle?:
-    | true
-    | {
-        successPath: string;
-        failurePath: string;
-      };
-  dataProcessor?: ({
-    data,
-    request,
-    reply,
-  }: {
-    data: UserData;
-    request: FastifyRequest;
-    reply: FastifyReply;
-  }) => Promise<void>;
+  redirectOnHandle?: boolean;
+  sseCorsOrigin?:
+    | string
+    | string[]
+    | ((origin: string, callback: (error: Error | null, allow?: boolean) => void) => void);
 }
 
-export interface OAuth2GlobalConfigInstance extends FastifyInstance {
+const authClients = new Map<string, ServerResponse<IncomingMessage>>();
+
+export interface OAuth2GlobalConfigInstance extends FastifyInstance, CommonOptions {
   successRedirectPath?: string;
   failureRedirectPath?: string;
   failureException?: Error;
   setFailureException: (exception: Error) => void;
-  dataProcessor?: ({
-    data,
-    request,
-    reply,
-  }: {
-    data: UserData;
-    request: FastifyRequest;
-    reply: FastifyReply;
-  }) => Promise<void>;
+  authClients: typeof authClients;
 }
 
 export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
@@ -57,18 +69,16 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
     scope: OAuth2GlobalConfigInstance,
     options: OAuth2GlobalConfigOptions,
   ): Promise<void> {
+    scope.register(fastifyCookie);
+    scope.authClients = authClients;
+    scope.applicationUrl = options.applicationUrl;
+    scope.dataProcessor = options.dataProcessor;
     scope.setFailureException = (exception: Error) => {
       scope.failureException = exception;
     };
-    scope.dataProcessor = options.dataProcessor;
-    if (options.redirectOnHandle !== undefined) {
-      if (options.redirectOnHandle === true) {
-        scope.successRedirectPath = '/oauth2/success';
-        scope.failureRedirectPath = '/oauth2/failure';
-      } else {
-        scope.successRedirectPath = options.redirectOnHandle.successPath;
-        scope.failureRedirectPath = options.redirectOnHandle.failurePath;
-      }
+    if (options.redirectOnHandle) {
+      scope.successRedirectPath = '/oauth2/success';
+      scope.failureRedirectPath = '/oauth2/failure';
       scope.get(scope.successRedirectPath, async (request, reply) => {
         reply.type('text/html').send(
           createPageTemplate(
@@ -89,13 +99,60 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
 										<div id="app-body-base">
 											<h3>Authentication Failure</h3>
 											<h5>You can close this window and return to the application to try again</h5>
-											${scope.failureException ? `<pre>Error: ${scope.failureException.message}</pre>` : ''}
+											${
+                        scope.failureException
+                          ? `<pre>Error: ${scope.failureException.message}</pre>`
+                          : ''
+                      }
 										</div>
 						`,
             { documentTitle: 'Authentication Failure' },
           ),
         );
         scope.failureException = undefined;
+      });
+    }
+    if (options.sseCorsOrigin) {
+      scope.post('/oauth2/status', async (request, reply) => {
+        const sessionId = crypto.randomUUID();
+        reply.setCookie('auth_session', sessionId, {
+          httpOnly: true,
+          sameSite: 'lax',
+        });
+      });
+      scope.get('/oauth2/status', (request, reply) => {
+        const rawOrigin = options.sseCorsOrigin;
+        const sessionId = request.cookies.auth_session;
+        if (!sessionId) return reply.status(400).send({ error: 'Session cookie missing' });
+        const requestOrigin = request.headers.origin;
+        let origin = '';
+        if (typeof rawOrigin === 'string') {
+          origin = rawOrigin;
+        } else if (Array.isArray(rawOrigin)) {
+          origin = rawOrigin.join(' ');
+        } else if (typeof rawOrigin === 'function' && requestOrigin) {
+          rawOrigin(requestOrigin, (err, allow) => {
+            if (err || !allow) {
+              reply.status(403).send({ error: 'CORS not allowed' });
+              return;
+            }
+            origin = requestOrigin;
+          });
+        }
+        if (!origin) {
+          reply.status(403).send({ error: 'CORS not allowed' });
+          return;
+        }
+        reply.raw
+          .setHeader('Content-Type', 'text/event-stream')
+          .setHeader('Cache-Control', 'no-cache')
+          .setHeader('Connection', 'keep-alive')
+          .setHeader('Access-Control-Allow-Origin', origin)
+          .setHeader('Access-Control-Allow-Credentials', 'true');
+        scope.authClients.set(sessionId, reply.raw);
+        request.raw.on('close', () => {
+          scope.authClients.delete(sessionId);
+        });
       });
     }
     return Promise.resolve();

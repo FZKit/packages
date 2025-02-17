@@ -1,10 +1,16 @@
-export interface UserDataBase<T extends string, U extends Record<string, unknown>, V = unknown> {
+import type { Prettify } from './type-utilities';
+
+export type BaseUserData<
+  T extends string,
+  U extends Record<string, unknown>,
+  V = unknown,
+> = Prettify<{
   provider: T;
   basicInfo: U;
   extra?: V;
-}
+}>;
 
-export type GoogleUserData = UserDataBase<
+export type GoogleUserData = BaseUserData<
   'google',
   {
     id: string;

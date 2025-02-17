@@ -1,8 +1,9 @@
 import oauthPlugin, { type OAuth2Namespace } from '@fastify/oauth2';
 import { httpClient } from '@fzkit/base/http-client';
 import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { OAuth2GlobalConfigFZKitPlugin, type OAuth2GlobalConfigInstance } from '../global-config';
+import type { UserData } from '../user-data';
 
 export interface GoogleOAuth2PluginInstance extends FastifyInstance, OAuth2GlobalConfigInstance {
   googleOAuth2: OAuth2Namespace;
@@ -13,9 +14,9 @@ export interface GoogleOAuth2PluginOptions {
     id: string;
     secret: string;
   };
-  startRedirectPath: string;
-  callbackUri: string;
   scope: string[];
+  startRedirectPath?: string;
+  callbackPath?: string;
 }
 
 class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
@@ -28,6 +29,7 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
     scope: GoogleOAuth2PluginInstance,
     options: GoogleOAuth2PluginOptions,
   ): Promise<void> {
+    const callbackUri = `${scope.applicationUrl}${options.callbackPath || '/oauth2/google/callback'}`;
     scope.register(oauthPlugin, {
       name: 'googleOAuth2',
       scope: options.scope,
@@ -38,10 +40,25 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
         },
         auth: oauthPlugin.GOOGLE_CONFIGURATION,
       },
-      startRedirectPath: options.startRedirectPath,
-      callbackUri: options.callbackUri,
+      startRedirectPath: options.startRedirectPath ?? '/oauth2/google/login',
+      callbackUri: callbackUri,
     });
-    const callBackPath = new URL(options.callbackUri).pathname;
+    const callBackPath = new URL(callbackUri).pathname;
+    function sendSseDataEvent({
+      request,
+      data,
+      close = true,
+    }: { request: FastifyRequest; data: Record<string, unknown>; close?: boolean }) {
+      const sessionId = request.cookies.auth_session;
+      if (sessionId && scope.authClients.has(sessionId)) {
+        // biome-ignore lint/style/noNonNullAssertion: This is a valid check
+        const channel = scope.authClients.get(sessionId)!;
+        channel.write(`data: ${JSON.stringify(data)}\n\n`);
+        if (close) {
+          channel.end();
+        }
+      }
+    }
     scope.get(callBackPath, async (request, reply) => {
       try {
         const { token } = await scope.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
@@ -50,25 +67,42 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
             Authorization: `Bearer ${token.access_token}`,
           },
         });
-        const data = await response.json();
-        await scope.dataProcessor?.({
-          data: { basicInfo: data, provider: 'google' },
-          request,
-          reply,
-        });
-        if (reply.sent) return;
+        const rawData = await response.json();
+        const data = { basicInfo: rawData, provider: 'google' } as UserData;
+        if (scope.dataProcessor) {
+          await scope.dataProcessor({
+            data,
+            request,
+            reply,
+            sseDispatcher: (callbackData) => sendSseDataEvent({ request, data: callbackData }),
+          });
+          return;
+        }
+        sendSseDataEvent({ request, data });
         if (scope.successRedirectPath) {
           return reply.redirect(scope.successRedirectPath);
         }
-        return reply.send(data);
+        return reply.send(rawData);
       } catch (e) {
+        const defaultErrorMessage = 'Failed to get user data';
+        const isInstanceOfError = e instanceof Error;
+        const errorObject = { error: isInstanceOfError ? e.message : defaultErrorMessage };
+        const errorInstance = isInstanceOfError ? e : new Error(defaultErrorMessage);
+        if (scope.errorProcessor) {
+          await scope.errorProcessor({
+            error: errorInstance,
+            request,
+            reply,
+            sseDispatcher: (callbackData) => sendSseDataEvent({ request, data: callbackData }),
+          });
+          return;
+        }
+        sendSseDataEvent({ request, data: errorObject });
         if (scope.failureRedirectPath) {
-          scope.setFailureException(e instanceof Error ? e : new Error('Failed to get user data'));
+          scope.setFailureException(errorInstance);
           return reply.redirect(scope.failureRedirectPath);
         }
-        return reply.code(400).send({
-          error: 'Failed to get user data',
-        });
+        return reply.code(400).send(errorObject);
       }
     });
     return Promise.resolve();

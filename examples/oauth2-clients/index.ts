@@ -1,14 +1,12 @@
+import cors from '@fastify/cors';
 import { GoogleOAuth2Plugin, OAuth2GlobalConfigPlugin } from '@fzkit/oauth2-clients';
 import Fastify from 'fastify';
 
 const fastify = Fastify({ logger: true });
+fastify.register(cors, { origin: ['http://127.0.0.1:5500'], credentials: true });
 fastify.register(OAuth2GlobalConfigPlugin, {
-  redirectOnHandle: true,
-  async dataProcessor({ data, reply, request }) {
-    // process data, save to database, etc
-    console.log(data);
-    reply.send(data);
-  },
+  applicationUrl: 'http://127.0.0.1:3000',
+  sseCorsOrigin: ['http://127.0.0.1:5500', 'http://127.0.0.1:3001'],
 });
 fastify.register(GoogleOAuth2Plugin, {
   client: {
@@ -16,8 +14,6 @@ fastify.register(GoogleOAuth2Plugin, {
     secret: '<CLIENT_SECRET>',
   },
   scope: ['profile'],
-  startRedirectPath: '/oauth2/google/login',
-  callbackUri: 'http://127.0.0.1:3000/oauth2/google/callback',
 });
 
 const start = async () => {
