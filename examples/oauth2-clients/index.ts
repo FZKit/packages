@@ -6,7 +6,23 @@ const fastify = Fastify({ logger: true });
 fastify.register(cors, { origin: ['http://127.0.0.1:5500'], credentials: true });
 fastify.register(OAuth2GlobalConfigPlugin, {
   applicationUrl: 'http://127.0.0.1:3000',
-  sseCorsOrigin: ['http://127.0.0.1:5500', 'http://127.0.0.1:3001'],
+  sseCorsOrigin: 'http://127.0.0.1:5500',
+  async dataProcessor({ data, reply, request, sseDispatcher }) {
+    try {
+      // process data manually (save to database, etc)
+      sseDispatcher(data);
+      reply.send(data);
+      // reply.redirect("/my-success-page")
+    } catch {
+      sseDispatcher({ error: 'An error occurred' });
+    }
+  },
+  async errorProcessor({ error, request, reply, sseDispatcher }) {
+    // process error manually
+    sseDispatcher({ error: error.message });
+    reply.send({ error: error.message });
+    // reply.redirect("/my-failure-page")
+  },
 });
 fastify.register(GoogleOAuth2Plugin, {
   client: {
@@ -14,6 +30,8 @@ fastify.register(GoogleOAuth2Plugin, {
     secret: '<CLIENT_SECRET>',
   },
   scope: ['profile'],
+  callbackPath: '/custom/oauth2/google/callback',
+  startRedirectPath: '/custom/oauth2/google/login',
 });
 
 const start = async () => {
