@@ -1,8 +1,9 @@
 import oauthPlugin, { type OAuth2Namespace } from '@fastify/oauth2';
 import { httpClient } from '@fzkit/base/http-client';
 import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { OAuth2GlobalConfigFZKitPlugin, type OAuth2GlobalConfigInstance } from '../global-config';
+import { sseSendJsonData } from '../helpers';
 import type { UserData } from '../user-data';
 
 export interface GoogleOAuth2PluginInstance extends FastifyInstance, OAuth2GlobalConfigInstance {
@@ -33,6 +34,18 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
     const callbackUri = `${scope.applicationUrl}${options.callbackPath || '/oauth2/google/callback'}`;
     const startRedirectPath = options.startRedirectPath || '/oauth2/google/login';
     const cookiePath = options.cookiePath || '/oauth2';
+    options.startRedirectPath = startRedirectPath;
+    options.cookiePath = cookiePath;
+    this.registerClient(scope, { ...options, callbackUri });
+    this.setupStartRedirect(scope, options);
+    this.setupCallback(scope, { ...options, callbackUri });
+    return Promise.resolve();
+  }
+
+  private registerClient(
+    scope: GoogleOAuth2PluginInstance,
+    options: GoogleOAuth2PluginOptions & { callbackUri: string },
+  ) {
     scope.register(oauthPlugin, {
       name: 'googleOAuth2',
       scope: options.scope,
@@ -43,42 +56,40 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
         },
         auth: oauthPlugin.GOOGLE_CONFIGURATION,
       },
-      startRedirectPath,
-      callbackUri: callbackUri,
+      startRedirectPath: options.startRedirectPath,
+      callbackUri: options.callbackUri,
       cookie: {
-        path: cookiePath,
+        path: options.cookiePath,
       },
     });
-    const callBackPath = new URL(callbackUri).pathname;
-    function sendSseDataEvent({
-      request,
-      data,
-      close = true,
-    }: { request: FastifyRequest; data: Record<string, unknown>; close?: boolean }) {
-      const sessionId = request.cookies.sessionId;
-      if (sessionId && scope.authClients.has(sessionId)) {
-        // biome-ignore lint/style/noNonNullAssertion: This is a valid check
-        const channel = scope.authClients.get(sessionId)!;
-        channel.write(`data: ${JSON.stringify(data)}\n\n`);
-        if (close) {
-          channel.end();
-        }
-      }
-    }
+  }
+
+  private setupStartRedirect(
+    scope: GoogleOAuth2PluginInstance,
+    options: GoogleOAuth2PluginOptions,
+  ) {
     scope.get<{ Params: { sessionId: string } }>(
-      `${startRedirectPath}/:sessionId`,
+      `${options.startRedirectPath}/:sessionId`,
       async (request, reply) => {
         const uri = await scope.googleOAuth2.generateAuthorizationUri(request, reply);
         reply
           .setCookie('sessionId', request.params.sessionId, {
             httpOnly: true,
             sameSite: 'lax',
-            path: cookiePath,
+            path: options.cookiePath,
           })
           .redirect(`${uri}&sessionId=${request.params.sessionId}`);
       },
     );
+  }
+
+  private setupCallback(
+    scope: GoogleOAuth2PluginInstance,
+    options: GoogleOAuth2PluginOptions & { callbackUri: string },
+  ) {
+    const callBackPath = new URL(options.callbackUri).pathname;
     scope.get(callBackPath, async (request, reply) => {
+      const sessionId = request.cookies.sessionId;
       try {
         const { token } = await scope.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
         const response = await httpClient.get('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -93,11 +104,18 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
             data,
             request,
             reply,
-            sseDispatcher: (callbackData) => sendSseDataEvent({ request, data: callbackData }),
+            sseDispatcher: (callbackData) =>
+              sseSendJsonData({
+                sessionId,
+                data: callbackData,
+              }),
           });
           return;
         }
-        sendSseDataEvent({ request, data });
+        sseSendJsonData({
+          sessionId,
+          data,
+        });
         if (scope.successRedirectPath) {
           return reply.redirect(scope.successRedirectPath);
         }
@@ -112,11 +130,18 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
             error: errorInstance,
             request,
             reply,
-            sseDispatcher: (callbackData) => sendSseDataEvent({ request, data: callbackData }),
+            sseDispatcher: (callbackData) =>
+              sseSendJsonData({
+                sessionId,
+                data: callbackData,
+              }),
           });
           return;
         }
-        sendSseDataEvent({ request, data: errorObject });
+        sseSendJsonData({
+          sessionId,
+          data: errorObject,
+        });
         if (scope.failureRedirectPath) {
           scope.setFailureException(errorInstance);
           return reply.redirect(scope.failureRedirectPath);
@@ -124,7 +149,6 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
         return reply.code(400).send(errorObject);
       }
     });
-    return Promise.resolve();
   }
 }
 

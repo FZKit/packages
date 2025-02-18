@@ -1,8 +1,10 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { createPageTemplate } from './assets/page-template';
+import { sessionClients } from './globals';
 import type { UserData } from './user-data';
+
+// TODO: allow set custom path to all paths
 
 interface CommonOptions {
   applicationUrl: string;
@@ -49,14 +51,11 @@ export interface OAuth2GlobalConfigOptions extends CommonOptions {
   redirectOnHandle?: boolean;
 }
 
-const authClients = new Map<string, ServerResponse<IncomingMessage>>();
-
 export interface OAuth2GlobalConfigInstance extends FastifyInstance, CommonOptions {
   successRedirectPath?: string;
   failureRedirectPath?: string;
   failureException?: Error;
   setFailureException: (exception: Error) => void;
-  authClients: typeof authClients;
 }
 
 export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
@@ -68,12 +67,20 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
     scope: OAuth2GlobalConfigInstance,
     options: OAuth2GlobalConfigOptions,
   ): Promise<void> {
-    scope.authClients = authClients;
     scope.applicationUrl = options.applicationUrl;
     scope.dataProcessor = options.dataProcessor;
     scope.setFailureException = (exception: Error) => {
       scope.failureException = exception;
     };
+    this.setupRedirectOnHandle(scope, options);
+    this.setupStatusCheck(scope, options);
+    return Promise.resolve();
+  }
+
+  private setupRedirectOnHandle(
+    scope: OAuth2GlobalConfigInstance,
+    options: OAuth2GlobalConfigOptions,
+  ) {
     if (options.redirectOnHandle) {
       scope.successRedirectPath = '/oauth2/success';
       scope.failureRedirectPath = '/oauth2/failure';
@@ -110,6 +117,9 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
         scope.failureException = undefined;
       });
     }
+  }
+
+  private setupStatusCheck(scope: OAuth2GlobalConfigInstance, options: OAuth2GlobalConfigOptions) {
     scope.post('/oauth2/status', async (request, reply) => {
       const sessionId = crypto.randomUUID();
       reply.send({ sessionId });
@@ -142,12 +152,11 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
         .setHeader('Cache-Control', 'no-cache')
         .setHeader('Connection', 'keep-alive')
         .setHeader('Access-Control-Allow-Origin', origin);
-      scope.authClients.set(sessionId, reply.raw);
+      sessionClients.set(sessionId, reply.raw);
       request.raw.on('close', () => {
-        scope.authClients.delete(sessionId);
+        sessionClients.delete(sessionId);
       });
     });
-    return Promise.resolve();
   }
 }
 
