@@ -1,26 +1,31 @@
-import cors from '@fastify/cors';
+import fastifyCors from '@fastify/cors';
 import { GoogleOAuth2Plugin, OAuth2GlobalConfigPlugin } from '@fzkit/oauth2-clients';
 import Fastify from 'fastify';
 
 const fastify = Fastify({ logger: true });
-fastify.register(cors, { origin: ['http://127.0.0.1:5500'], credentials: true });
+// enable cors to allow the client to make requests to the server for status tracking
+fastify.register(fastifyCors, {
+  origin: '*',
+  methods: ['POST'],
+});
 fastify.register(OAuth2GlobalConfigPlugin, {
   applicationUrl: 'http://127.0.0.1:3000',
-  sseCorsOrigin: 'http://127.0.0.1:5500',
-  async dataProcessor({ data, reply, request, sseDispatcher }) {
+  async dataProcessor({ data, reply, sseDispatcher }) {
     try {
       // process data manually (save to database, etc)
       sseDispatcher(data);
       reply.send(data);
+      // or redirect to a success page
       // reply.redirect("/my-success-page")
     } catch {
       sseDispatcher({ error: 'An error occurred' });
     }
   },
-  async errorProcessor({ error, request, reply, sseDispatcher }) {
+  async errorProcessor({ error, reply, sseDispatcher }) {
     // process error manually
     sseDispatcher({ error: error.message });
     reply.send({ error: error.message });
+    // or redirect to a failure page
     // reply.redirect("/my-failure-page")
   },
 });
@@ -30,8 +35,6 @@ fastify.register(GoogleOAuth2Plugin, {
     secret: '<CLIENT_SECRET>',
   },
   scope: ['profile'],
-  callbackPath: '/custom/oauth2/google/callback',
-  startRedirectPath: '/custom/oauth2/google/login',
 });
 
 const start = async () => {

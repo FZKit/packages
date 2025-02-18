@@ -17,6 +17,7 @@ export interface GoogleOAuth2PluginOptions {
   scope: string[];
   startRedirectPath?: string;
   callbackPath?: string;
+  cookiePath?: string;
 }
 
 class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
@@ -30,6 +31,8 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
     options: GoogleOAuth2PluginOptions,
   ): Promise<void> {
     const callbackUri = `${scope.applicationUrl}${options.callbackPath || '/oauth2/google/callback'}`;
+    const startRedirectPath = options.startRedirectPath || '/oauth2/google/login';
+    const cookiePath = options.cookiePath || '/oauth2';
     scope.register(oauthPlugin, {
       name: 'googleOAuth2',
       scope: options.scope,
@@ -40,8 +43,11 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
         },
         auth: oauthPlugin.GOOGLE_CONFIGURATION,
       },
-      startRedirectPath: options.startRedirectPath ?? '/oauth2/google/login',
+      startRedirectPath,
       callbackUri: callbackUri,
+      cookie: {
+        path: cookiePath,
+      },
     });
     const callBackPath = new URL(callbackUri).pathname;
     function sendSseDataEvent({
@@ -49,7 +55,7 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
       data,
       close = true,
     }: { request: FastifyRequest; data: Record<string, unknown>; close?: boolean }) {
-      const sessionId = request.cookies.auth_session;
+      const sessionId = request.cookies.sessionId;
       if (sessionId && scope.authClients.has(sessionId)) {
         // biome-ignore lint/style/noNonNullAssertion: This is a valid check
         const channel = scope.authClients.get(sessionId)!;
@@ -59,6 +65,19 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
         }
       }
     }
+    scope.get<{ Params: { sessionId: string } }>(
+      `${startRedirectPath}/:sessionId`,
+      async (request, reply) => {
+        const uri = await scope.googleOAuth2.generateAuthorizationUri(request, reply);
+        reply
+          .setCookie('sessionId', request.params.sessionId, {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: cookiePath,
+          })
+          .redirect(`${uri}&sessionId=${request.params.sessionId}`);
+      },
+    );
     scope.get(callBackPath, async (request, reply) => {
       try {
         const { token } = await scope.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);

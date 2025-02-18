@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import fastifyCookie from '@fastify/cookie';
 import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { createPageTemplate } from './assets/page-template';
@@ -29,6 +28,10 @@ interface CommonOptions {
     reply: FastifyReply;
     sseDispatcher: (data: Record<string, unknown>) => void;
   }) => Promise<void>;
+  sseCorsOrigin?:
+    | string
+    | string[]
+    | ((origin: string, callback: (error: Error | null, allow?: boolean) => void) => void);
 }
 
 export interface OAuth2GlobalConfigOptions extends CommonOptions {
@@ -44,10 +47,6 @@ export interface OAuth2GlobalConfigOptions extends CommonOptions {
    * @default undefined
    */
   redirectOnHandle?: boolean;
-  sseCorsOrigin?:
-    | string
-    | string[]
-    | ((origin: string, callback: (error: Error | null, allow?: boolean) => void) => void);
 }
 
 const authClients = new Map<string, ServerResponse<IncomingMessage>>();
@@ -69,7 +68,6 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
     scope: OAuth2GlobalConfigInstance,
     options: OAuth2GlobalConfigOptions,
   ): Promise<void> {
-    scope.register(fastifyCookie);
     scope.authClients = authClients;
     scope.applicationUrl = options.applicationUrl;
     scope.dataProcessor = options.dataProcessor;
@@ -112,49 +110,43 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
         scope.failureException = undefined;
       });
     }
-    if (options.sseCorsOrigin) {
-      scope.post('/oauth2/status', async (request, reply) => {
-        const sessionId = crypto.randomUUID();
-        reply.setCookie('auth_session', sessionId, {
-          httpOnly: true,
-          sameSite: 'lax',
+    scope.post('/oauth2/status', async (request, reply) => {
+      const sessionId = crypto.randomUUID();
+      reply.send({ sessionId });
+    });
+    scope.get<{ Params: { sessionId: string } }>('/oauth2/status/:sessionId', (request, reply) => {
+      const sessionId = request.params.sessionId;
+      if (!sessionId) return reply.status(400).send({ error: 'Missing session id' });
+      const rawOrigin = options.sseCorsOrigin;
+      const requestOrigin = request.headers.origin;
+      let origin = '*';
+      if (typeof rawOrigin === 'string') {
+        origin = rawOrigin;
+      } else if (Array.isArray(rawOrigin)) {
+        origin = rawOrigin.join(' ');
+      } else if (typeof rawOrigin === 'function' && requestOrigin) {
+        rawOrigin(requestOrigin, (err, allow) => {
+          if (err || !allow) {
+            reply.status(403).send({ error: 'CORS not allowed' });
+            return;
+          }
+          origin = requestOrigin;
         });
+      }
+      if (!origin) {
+        reply.status(403).send({ error: 'CORS not allowed' });
+        return;
+      }
+      reply.raw
+        .setHeader('Content-Type', 'text/event-stream')
+        .setHeader('Cache-Control', 'no-cache')
+        .setHeader('Connection', 'keep-alive')
+        .setHeader('Access-Control-Allow-Origin', origin);
+      scope.authClients.set(sessionId, reply.raw);
+      request.raw.on('close', () => {
+        scope.authClients.delete(sessionId);
       });
-      scope.get('/oauth2/status', (request, reply) => {
-        const rawOrigin = options.sseCorsOrigin;
-        const sessionId = request.cookies.auth_session;
-        if (!sessionId) return reply.status(400).send({ error: 'Session cookie missing' });
-        const requestOrigin = request.headers.origin;
-        let origin = '';
-        if (typeof rawOrigin === 'string') {
-          origin = rawOrigin;
-        } else if (Array.isArray(rawOrigin)) {
-          origin = rawOrigin.join(' ');
-        } else if (typeof rawOrigin === 'function' && requestOrigin) {
-          rawOrigin(requestOrigin, (err, allow) => {
-            if (err || !allow) {
-              reply.status(403).send({ error: 'CORS not allowed' });
-              return;
-            }
-            origin = requestOrigin;
-          });
-        }
-        if (!origin) {
-          reply.status(403).send({ error: 'CORS not allowed' });
-          return;
-        }
-        reply.raw
-          .setHeader('Content-Type', 'text/event-stream')
-          .setHeader('Cache-Control', 'no-cache')
-          .setHeader('Connection', 'keep-alive')
-          .setHeader('Access-Control-Allow-Origin', origin)
-          .setHeader('Access-Control-Allow-Credentials', 'true');
-        scope.authClients.set(sessionId, reply.raw);
-        request.raw.on('close', () => {
-          scope.authClients.delete(sessionId);
-        });
-      });
-    }
+    });
     return Promise.resolve();
   }
 }
