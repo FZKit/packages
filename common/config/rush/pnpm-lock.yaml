@@ -61,6 +61,9 @@ importers:
 
   ../../libraries/oauth2-base:
     dependencies:
+      '@fastify/oauth2':
+        specifier: ~8.1.2
+        version: 8.1.2
       '@fzkit/base':
         specifier: workspace:*
         version: link:../base

@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "fastify": "~5.2.1",
-    "@fzkit/base": "workspace:*"
+    "@fzkit/base": "workspace:*",
+    "@fastify/oauth2": "~8.1.2"
   }
 }
