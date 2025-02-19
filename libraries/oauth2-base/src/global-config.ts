@@ -1,8 +1,8 @@
-import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { createPageTemplate } from './assets/page-template';
-import { sessionClients } from './globals';
-import type { UserData } from './user-data';
+import { FZKitPlugin, createFastifyPlugin } from "@fzkit/base/plugin";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { sessionClients } from "./globals";
+import { createPageTemplate } from "./page-template";
+import type { UserData } from "./user-data";
 
 // TODO: allow set custom path to all paths
 
@@ -33,7 +33,10 @@ interface CommonOptions {
   sseCorsOrigin?:
     | string
     | string[]
-    | ((origin: string, callback: (error: Error | null, allow?: boolean) => void) => void);
+    | ((
+        origin: string,
+        callback: (error: Error | null, allow?: boolean) => void
+      ) => void);
 }
 
 export interface OAuth2GlobalConfigOptions extends CommonOptions {
@@ -51,7 +54,9 @@ export interface OAuth2GlobalConfigOptions extends CommonOptions {
   redirectOnHandle?: boolean;
 }
 
-export interface OAuth2GlobalConfigInstance extends FastifyInstance, CommonOptions {
+export interface OAuth2GlobalConfigInstance
+  extends FastifyInstance,
+    CommonOptions {
   successRedirectPath?: string;
   failureRedirectPath?: string;
   failureException?: Error;
@@ -65,7 +70,7 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
   encapsulate = false;
   protected plugin(
     scope: OAuth2GlobalConfigInstance,
-    options: OAuth2GlobalConfigOptions,
+    options: OAuth2GlobalConfigOptions
   ): Promise<void> {
     scope.applicationUrl = options.applicationUrl;
     scope.dataProcessor = options.dataProcessor;
@@ -79,13 +84,13 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
 
   private setupRedirectOnHandle(
     scope: OAuth2GlobalConfigInstance,
-    options: OAuth2GlobalConfigOptions,
+    options: OAuth2GlobalConfigOptions
   ) {
     if (options.redirectOnHandle) {
-      scope.successRedirectPath = '/oauth2/success';
-      scope.failureRedirectPath = '/oauth2/failure';
+      scope.successRedirectPath = "/oauth2/success";
+      scope.failureRedirectPath = "/oauth2/failure";
       scope.get(scope.successRedirectPath, async (request, reply) => {
-        reply.type('text/html').send(
+        reply.type("text/html").send(
           createPageTemplate(
             /*html*/ `
 										<div id="app-body-base">
@@ -93,12 +98,12 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
 											<h5>You can close this window and return to the application</h5>
 										</div>
 						`,
-            { documentTitle: 'Authentication Failure' },
-          ),
+            { documentTitle: "Authentication Failure" }
+          )
         );
       });
       scope.get(scope.failureRedirectPath, async (request, reply) => {
-        reply.type('text/html').send(
+        reply.type("text/html").send(
           createPageTemplate(
             /*html*/ `
 										<div id="app-body-base">
@@ -107,57 +112,66 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
 											${
                         scope.failureException
                           ? `<pre>Error: ${scope.failureException.message}</pre>`
-                          : ''
+                          : ""
                       }
 										</div>
 						`,
-            { documentTitle: 'Authentication Failure' },
-          ),
+            { documentTitle: "Authentication Failure" }
+          )
         );
         scope.failureException = undefined;
       });
     }
   }
 
-  private setupStatusCheck(scope: OAuth2GlobalConfigInstance, options: OAuth2GlobalConfigOptions) {
-    scope.post('/oauth2/status', async (request, reply) => {
+  private setupStatusCheck(
+    scope: OAuth2GlobalConfigInstance,
+    options: OAuth2GlobalConfigOptions
+  ) {
+    scope.post("/oauth2/status", async (request, reply) => {
       const sessionId = crypto.randomUUID();
       reply.send({ sessionId });
     });
-    scope.get<{ Params: { sessionId: string } }>('/oauth2/status/:sessionId', (request, reply) => {
-      const sessionId = request.params.sessionId;
-      if (!sessionId) return reply.status(400).send({ error: 'Missing session id' });
-      const rawOrigin = options.sseCorsOrigin;
-      const requestOrigin = request.headers.origin;
-      let origin = '*';
-      if (typeof rawOrigin === 'string') {
-        origin = rawOrigin;
-      } else if (Array.isArray(rawOrigin)) {
-        origin = rawOrigin.join(' ');
-      } else if (typeof rawOrigin === 'function' && requestOrigin) {
-        rawOrigin(requestOrigin, (err, allow) => {
-          if (err || !allow) {
-            reply.status(403).send({ error: 'CORS not allowed' });
-            return;
-          }
-          origin = requestOrigin;
+    scope.get<{ Params: { sessionId: string } }>(
+      "/oauth2/status/:sessionId",
+      (request, reply) => {
+        const sessionId = request.params.sessionId;
+        if (!sessionId)
+          return reply.status(400).send({ error: "Missing session id" });
+        const rawOrigin = options.sseCorsOrigin;
+        const requestOrigin = request.headers.origin;
+        let origin = "*";
+        if (typeof rawOrigin === "string") {
+          origin = rawOrigin;
+        } else if (Array.isArray(rawOrigin)) {
+          origin = rawOrigin.join(" ");
+        } else if (typeof rawOrigin === "function" && requestOrigin) {
+          rawOrigin(requestOrigin, (err, allow) => {
+            if (err || !allow) {
+              reply.status(403).send({ error: "CORS not allowed" });
+              return;
+            }
+            origin = requestOrigin;
+          });
+        }
+        if (!origin) {
+          reply.status(403).send({ error: "CORS not allowed" });
+          return;
+        }
+        reply.raw
+          .setHeader("Content-Type", "text/event-stream")
+          .setHeader("Cache-Control", "no-cache")
+          .setHeader("Connection", "keep-alive")
+          .setHeader("Access-Control-Allow-Origin", origin);
+        sessionClients.set(sessionId, reply.raw);
+        request.raw.on("close", () => {
+          sessionClients.delete(sessionId);
         });
       }
-      if (!origin) {
-        reply.status(403).send({ error: 'CORS not allowed' });
-        return;
-      }
-      reply.raw
-        .setHeader('Content-Type', 'text/event-stream')
-        .setHeader('Cache-Control', 'no-cache')
-        .setHeader('Connection', 'keep-alive')
-        .setHeader('Access-Control-Allow-Origin', origin);
-      sessionClients.set(sessionId, reply.raw);
-      request.raw.on('close', () => {
-        sessionClients.delete(sessionId);
-      });
-    });
+    );
   }
 }
 
-export const OAuth2GlobalConfigPlugin = createFastifyPlugin(OAuth2GlobalConfigFZKitPlugin);
+export const OAuth2GlobalConfigPlugin = createFastifyPlugin(
+  OAuth2GlobalConfigFZKitPlugin
+);

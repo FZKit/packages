@@ -26,9 +26,12 @@ importers:
       '@fastify/cors':
         specifier: ~10.0.2
         version: 10.0.2
-      '@fzkit/oauth2-clients':
+      '@fzkit/oauth2-base':
         specifier: workspace:*
-        version: link:../../libraries/oauth2-clients
+        version: link:../../libraries/oauth2-base
+      '@fzkit/oauth2-google':
+        specifier: workspace:*
+        version: link:../../libraries/oauth2-google
       fastify:
         specifier: ~5.2.1
         version: 5.2.1
@@ -56,7 +59,20 @@ importers:
         specifier: ~5.7.3
         version: 5.7.3
 
-  ../../libraries/oauth2-clients:
+  ../../libraries/oauth2-base:
+    dependencies:
+      '@fzkit/base':
+        specifier: workspace:*
+        version: link:../base
+      fastify:
+        specifier: ~5.2.1
+        version: 5.2.1
+    devDependencies:
+      tsup:
+        specifier: ~8.3.6
+        version: 8.3.6(typescript@5.7.3)
+
+  ../../libraries/oauth2-google:
     dependencies:
       '@fastify/oauth2':
         specifier: ~8.1.2
@@ -64,6 +80,9 @@ importers:
       '@fzkit/base':
         specifier: workspace:*
         version: link:../base
+      '@fzkit/oauth2-base':
+        specifier: workspace:*
+        version: link:../oauth2-base
       fastify:
         specifier: ~5.2.1
         version: 5.2.1

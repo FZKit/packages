@@ -336,8 +336,13 @@
       "tags": ["pkg"]
     },
     {
-      "packageName": "@fzkit/oauth2-clients",
-      "projectFolder": "libraries/oauth2-clients",
+      "packageName": "@fzkit/oauth2-base",
+      "projectFolder": "libraries/oauth2-base",
+      "tags": ["pkg"]
+    },
+    {
+      "packageName": "@fzkit/oauth2-google",
+      "projectFolder": "libraries/oauth2-google",
       "tags": ["pkg"]
     },
     {

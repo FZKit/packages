@@ -5,13 +5,14 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch index.ts"
+    "dev": "tsx --watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fzkit/oauth2-clients": "workspace:*",
+    "@fzkit/oauth2-base": "workspace:*",
+    "@fzkit/oauth2-google": "workspace:*",
     "fastify": "~5.2.1",
     "@fastify/cors": "~10.0.2"
   },
