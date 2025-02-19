@@ -346,6 +346,11 @@
       "tags": ["pkg"]
     },
     {
+      "packageName": "@fzkit/oauth2-apple",
+      "projectFolder": "libraries/oauth2-apple",
+      "tags": ["pkg"]
+    },
+    {
       "packageName": "base-example",
       "projectFolder": "examples/base"
     },

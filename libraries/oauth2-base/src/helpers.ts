@@ -50,6 +50,7 @@ export function setupStartRedirect<T extends FastifyInstance>(
   );
 }
 
+// TODO: add request schema
 export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
   scope: T,
   callback: (

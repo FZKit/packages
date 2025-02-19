@@ -1,0 +1,51 @@
+{
+  "name": "@fzkit/oauth2-apple",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "clean": true,
+    "dts": true,
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "treeshake": true
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsup": "~8.3.6"
+  },
+  "dependencies": {
+    "fastify": "~5.2.1",
+    "@fzkit/base": "workspace:*",
+    "@fastify/oauth2": "~8.1.2",
+    "@fzkit/oauth2-base": "workspace:*",
+    "apple-signin-auth": "~1.7.8"
+  }
+}

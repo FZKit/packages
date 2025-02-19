@@ -5,7 +5,6 @@ import {
   type GoogleUserData,
   OAuth2BaseConfigFZKitPlugin,
   type OAuth2BaseConfigInstance,
-  type UserData,
   callbackExecutor,
   setupStartRedirect,
 } from "@fzkit/oauth2-base";
@@ -97,7 +96,7 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
     );
     const rawData = await response.json();
     return {
-      parsed: { basicInfo: rawData, provider: "google" } as UserData,
+      parsed: { basicInfo: rawData, provider: "google" } as GoogleUserData,
       raw: rawData,
     };
   }

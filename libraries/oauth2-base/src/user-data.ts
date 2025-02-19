@@ -1,17 +1,17 @@
-import type { Prettify } from './type-utilities';
+import type { Prettify } from "./type-utilities";
 
 export type BaseUserData<
   T extends string,
   U extends Record<string, unknown>,
-  V = unknown,
+  V = unknown
 > = Prettify<{
   provider: T;
   basicInfo: U;
-  extra?: V;
+  extra: V;
 }>;
 
 export type GoogleUserData = BaseUserData<
-  'google',
+  "google",
   {
     id: string;
     name: string;
@@ -21,4 +21,15 @@ export type GoogleUserData = BaseUserData<
   }
 >;
 
-export type UserData = GoogleUserData;
+export type AppleUserData = BaseUserData<
+  "apple",
+  {
+    email: string;
+    id: string;
+  },
+  {
+    isPrivateEmail: boolean;
+  }
+>;
+
+export type UserData = GoogleUserData | AppleUserData;
