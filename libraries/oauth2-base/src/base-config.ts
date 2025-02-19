@@ -39,7 +39,7 @@ interface CommonOptions {
       ) => void);
 }
 
-export interface OAuth2GlobalConfigOptions extends CommonOptions {
+export interface OAuth2BaseConfigOptions extends CommonOptions {
   /**
    * That can be used to redirect the user after the OAuth2 flow instead of returning the data.
    *
@@ -54,7 +54,7 @@ export interface OAuth2GlobalConfigOptions extends CommonOptions {
   redirectOnHandle?: boolean;
 }
 
-export interface OAuth2GlobalConfigInstance
+export interface OAuth2BaseConfigInstance
   extends FastifyInstance,
     CommonOptions {
   successRedirectPath?: string;
@@ -63,14 +63,14 @@ export interface OAuth2GlobalConfigInstance
   setFailureException: (exception: Error) => void;
 }
 
-export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
-  OAuth2GlobalConfigInstance,
-  OAuth2GlobalConfigOptions
+export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
+  OAuth2BaseConfigInstance,
+  OAuth2BaseConfigOptions
 > {
   encapsulate = false;
   protected plugin(
-    scope: OAuth2GlobalConfigInstance,
-    options: OAuth2GlobalConfigOptions
+    scope: OAuth2BaseConfigInstance,
+    options: OAuth2BaseConfigOptions
   ): Promise<void> {
     scope.applicationUrl = options.applicationUrl;
     scope.dataProcessor = options.dataProcessor;
@@ -83,8 +83,8 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
   }
 
   private setupRedirectOnHandle(
-    scope: OAuth2GlobalConfigInstance,
-    options: OAuth2GlobalConfigOptions
+    scope: OAuth2BaseConfigInstance,
+    options: OAuth2BaseConfigOptions
   ) {
     if (options.redirectOnHandle) {
       scope.successRedirectPath = "/oauth2/success";
@@ -125,8 +125,8 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
   }
 
   private setupStatusCheck(
-    scope: OAuth2GlobalConfigInstance,
-    options: OAuth2GlobalConfigOptions
+    scope: OAuth2BaseConfigInstance,
+    options: OAuth2BaseConfigOptions
   ) {
     scope.post("/oauth2/status", async (request, reply) => {
       const sessionId = crypto.randomUUID();
@@ -172,6 +172,6 @@ export class OAuth2GlobalConfigFZKitPlugin extends FZKitPlugin<
   }
 }
 
-export const OAuth2GlobalConfigPlugin = createFastifyPlugin(
-  OAuth2GlobalConfigFZKitPlugin
+export const OAuth2BaseConfigPlugin = createFastifyPlugin(
+  OAuth2BaseConfigFZKitPlugin
 );

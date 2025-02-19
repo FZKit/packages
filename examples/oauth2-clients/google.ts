@@ -1,5 +1,5 @@
 import fastifyCors from "@fastify/cors";
-import { OAuth2GlobalConfigPlugin } from "@fzkit/oauth2-base";
+import { OAuth2BaseConfigPlugin } from "@fzkit/oauth2-base";
 import { GoogleOAuth2Plugin } from "@fzkit/oauth2-google";
 import Fastify from "fastify";
 
@@ -9,7 +9,7 @@ fastify.register(fastifyCors, {
   origin: "*",
   methods: ["POST"],
 });
-fastify.register(OAuth2GlobalConfigPlugin, {
+fastify.register(OAuth2BaseConfigPlugin, {
   applicationUrl: "http://127.0.0.1:3000",
   async dataProcessor({ data, reply, sseDispatcher }) {
     try {

@@ -2,8 +2,8 @@ import oauthPlugin, { type OAuth2Namespace } from "@fastify/oauth2";
 import { httpClient } from "@fzkit/base/http-client";
 import { FZKitPlugin, createFastifyPlugin } from "@fzkit/base/plugin";
 import {
-  OAuth2GlobalConfigFZKitPlugin,
-  type OAuth2GlobalConfigInstance,
+  OAuth2BaseConfigFZKitPlugin,
+  type OAuth2BaseConfigInstance,
   type UserData,
   sseSendJsonData,
 } from "@fzkit/oauth2-base";
@@ -11,7 +11,7 @@ import type { FastifyInstance } from "fastify";
 
 export interface GoogleOAuth2PluginInstance
   extends FastifyInstance,
-    OAuth2GlobalConfigInstance {
+    OAuth2BaseConfigInstance {
   googleOAuth2: OAuth2Namespace;
 }
 
@@ -30,7 +30,7 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
   GoogleOAuth2PluginInstance,
   GoogleOAuth2PluginOptions
 > {
-  dependencies = [OAuth2GlobalConfigFZKitPlugin.name];
+  dependencies = [OAuth2BaseConfigFZKitPlugin.name];
 
   protected plugin(
     scope: GoogleOAuth2PluginInstance,
