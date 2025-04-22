@@ -6,6 +6,37 @@ import type { UserData } from "./user-data";
 
 // TODO: allow set custom path to all paths
 
+const messages = {
+  "en-US": {
+    success: {
+      title: "Authentication Success",
+      message:
+        "You can close this window and return to the application to continue.",
+    },
+    failure: {
+      title: "Authentication Failure",
+      message:
+        "You can close this window and return to the application to try again.",
+    },
+  },
+  "pt-BR": {
+    success: {
+      title: "Autenticação bem-sucedida",
+      message:
+        "Você pode fechar esta janela e retornar ao aplicativo para continuar.",
+    },
+    failure: {
+      title: "Falha na autenticação",
+      message:
+        "Você pode fechar esta janela e retornar ao aplicativo para tentar novamente.",
+    },
+  },
+};
+
+const getLang = (req: FastifyRequest) =>
+  (req.headers["accept-language"]?.split(",")[0] ||
+    "en-US") as keyof typeof messages;
+
 interface CommonOptions {
   applicationUrl: string;
   dataProcessor?: ({
@@ -90,25 +121,29 @@ export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
       scope.successRedirectPath = "/oauth2/success";
       scope.failureRedirectPath = "/oauth2/failure";
       scope.get(scope.successRedirectPath, async (request, reply) => {
+        const lang = getLang(request);
+        const _messages = messages[lang].success;
         reply.type("text/html").send(
           createPageTemplate(
             /*html*/ `
 										<div id="app-body-base">
-											<h3>Authentication Success</h3>
-											<h5>You can close this window and return to the application</h5>
+											<h3>${_messages.title}</h3>
+											<h5>${_messages.message}</h5>
 										</div>
 						`,
-            { documentTitle: "Authentication Failure" }
+            { documentTitle: _messages.title, documentLang: lang }
           )
         );
       });
       scope.get(scope.failureRedirectPath, async (request, reply) => {
+        const lang = getLang(request);
+        const _messages = messages[lang].failure;
         reply.type("text/html").send(
           createPageTemplate(
             /*html*/ `
 										<div id="app-body-base">
-											<h3>Authentication Failure</h3>
-											<h5>You can close this window and return to the application to try again</h5>
+											<h3>${_messages.title}</h3>
+											<h5>${_messages.message}</h5>
 											${
                         scope.failureException
                           ? `<pre>Error: ${scope.failureException.message}</pre>`
@@ -116,7 +151,7 @@ export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
                       }
 										</div>
 						`,
-            { documentTitle: "Authentication Failure" }
+            { documentTitle: _messages.title, documentLang: lang }
           )
         );
         scope.failureException = undefined;
