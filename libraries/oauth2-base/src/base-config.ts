@@ -6,7 +6,7 @@ import type { UserData } from "./user-data";
 
 // TODO: allow set custom path to all paths
 
-const messages = {
+const dictionary = {
   "en-US": {
     success: {
       title: "Authentication Success",
@@ -33,9 +33,12 @@ const messages = {
   },
 };
 
+type Languages = keyof typeof dictionary;
+
 const getLang = (req: FastifyRequest) =>
-  (req.headers["accept-language"]?.split(",")[0] ||
-    "en-US") as keyof typeof messages;
+  (req.headers["accept-language"]?.split(",")[0] || "en-US") as Languages;
+const getMessages = (lang: Languages) =>
+  dictionary[lang] || dictionary["en-US"];
 
 interface CommonOptions {
   applicationUrl: string;
@@ -122,28 +125,28 @@ export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
       scope.failureRedirectPath = "/oauth2/failure";
       scope.get(scope.successRedirectPath, async (request, reply) => {
         const lang = getLang(request);
-        const _messages = messages[lang].success;
+        const messages = getMessages(lang).success;
         reply.type("text/html").send(
           createPageTemplate(
             /*html*/ `
 										<div id="app-body-base">
-											<h3>${_messages.title}</h3>
-											<h5>${_messages.message}</h5>
+											<h3>${messages.title}</h3>
+											<h5>${messages.message}</h5>
 										</div>
 						`,
-            { documentTitle: _messages.title, documentLang: lang }
+            { documentTitle: messages.title, documentLang: lang }
           )
         );
       });
       scope.get(scope.failureRedirectPath, async (request, reply) => {
         const lang = getLang(request);
-        const _messages = messages[lang].failure;
+        const messages = getMessages(lang).failure;
         reply.type("text/html").send(
           createPageTemplate(
             /*html*/ `
 										<div id="app-body-base">
-											<h3>${_messages.title}</h3>
-											<h5>${_messages.message}</h5>
+											<h3>${messages.title}</h3>
+											<h5>${messages.message}</h5>
 											${
                         scope.failureException
                           ? `<pre>Error: ${scope.failureException.message}</pre>`
@@ -151,7 +154,7 @@ export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
                       }
 										</div>
 						`,
-            { documentTitle: _messages.title, documentLang: lang }
+            { documentTitle: messages.title, documentLang: lang }
           )
         );
         scope.failureException = undefined;
