@@ -82,7 +82,7 @@ export interface OAuth2BaseConfigOptions extends CommonOptions {
    *
    * @default undefined
    */
-  redirectOnHandle?: boolean;
+  addFeedbackRoutes?: boolean;
 }
 
 export interface OAuth2BaseConfigInstance
@@ -117,7 +117,7 @@ export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
     scope: OAuth2BaseConfigInstance,
     options: OAuth2BaseConfigOptions
   ) {
-    if (options.redirectOnHandle) {
+    if (options.addFeedbackRoutes !== false) {
       scope.successRedirectPath = "/oauth2/success";
       scope.failureRedirectPath = "/oauth2/failure";
       scope.get(scope.successRedirectPath, async (request, reply) => {

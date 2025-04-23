@@ -52,18 +52,16 @@ export function setupStartRedirect<T extends FastifyInstance>(
 
 export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
   scope: T,
-  callback: (
-    request: FastifyRequest
-  ) => Promise<{ parsed: UserData; raw: unknown }>,
+  callback: (request: FastifyRequest) => Promise<UserData>,
   options: { callbackPath: string; cookiePath: string }
 ) {
   scope.get(options.callbackPath, async (request, reply) => {
     const sessionId = request.cookies.session_id;
     try {
-      const { parsed, raw } = await callback(request);
+      const data = await callback(request);
       if (scope.dataProcessor) {
         await scope.dataProcessor({
-          data: parsed,
+          data,
           request,
           reply,
           sseDispatcher: (callbackData) =>
@@ -76,12 +74,12 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
       }
       sseSendJsonData({
         sessionId,
-        data: parsed,
+        data,
       });
       if (scope.successRedirectPath) {
         return reply.redirect(scope.successRedirectPath);
       }
-      return reply.send(raw);
+      return reply.send(data);
     } catch (e) {
       const defaultErrorMessage = "Failed to get user data";
       const isInstanceOfError = e instanceof Error;

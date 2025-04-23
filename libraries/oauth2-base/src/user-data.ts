@@ -1,23 +1,24 @@
-import type { Prettify } from './type-utilities';
+import type { Prettify } from "./type-utilities";
 
 export type BaseUserData<
   T extends string,
   U extends Record<string, unknown>,
-  V = unknown,
+  V = Record<string, unknown>
 > = Prettify<{
   provider: T;
-  basicInfo: U;
-  extra?: V;
+  known: U;
+  raw: V;
 }>;
 
 export type GoogleUserData = BaseUserData<
-  'google',
+  "google",
   {
-    id: string;
-    name: string;
-    given_name: string;
-    family_name: string;
-    picture: string;
+    id?: string;
+    name?: string;
+    given_name?: string;
+    family_name?: string;
+    picture?: string;
+    email?: string;
   }
 >;
 

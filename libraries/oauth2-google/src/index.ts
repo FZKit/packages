@@ -5,7 +5,6 @@ import {
   type GoogleUserData,
   OAuth2BaseConfigFZKitPlugin,
   type OAuth2BaseConfigInstance,
-  type UserData,
   callbackExecutor,
   setupStartRedirect,
 } from "@fzkit/oauth2-base";
@@ -84,7 +83,7 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
   private async setupCallback(
     scope: GoogleOAuth2PluginInstance,
     request: FastifyRequest
-  ): Promise<{ parsed: GoogleUserData; raw: unknown }> {
+  ): Promise<GoogleUserData> {
     const { token } =
       await scope.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
     const response = await httpClient.get(
@@ -97,8 +96,16 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
     );
     const rawData = await response.json();
     return {
-      parsed: { basicInfo: rawData, provider: "google" } as UserData,
+      known: {
+        id: rawData.id,
+        email: rawData.email,
+        name: rawData.name,
+        picture: rawData.picture,
+        family_name: rawData.family_name,
+        given_name: rawData.given_name,
+      },
       raw: rawData,
+      provider: "google",
     };
   }
 }
