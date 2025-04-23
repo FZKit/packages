@@ -39,7 +39,7 @@ const getLang = (req: FastifyRequest) =>
 
 interface CommonOptions {
   applicationUrl: string;
-  dataProcessor?: ({
+  dataProcessor: ({
     data,
     request,
     reply,
@@ -50,7 +50,7 @@ interface CommonOptions {
     reply: FastifyReply;
     sseDispatcher: (data: Record<string, unknown>) => void;
   }) => Promise<void>;
-  errorProcessor?: ({
+  errorProcessor: ({
     error,
     request,
     reply,

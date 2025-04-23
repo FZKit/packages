@@ -59,58 +59,34 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
     const sessionId = request.cookies.session_id;
     try {
       const data = await callback(request);
-      if (scope.dataProcessor) {
-        await scope.dataProcessor({
-          data,
-          request,
-          reply,
-          sseDispatcher: (callbackData) =>
-            sseSendJsonData({
-              sessionId,
-              data: callbackData,
-            }),
-        });
-        return;
-      }
-      sseSendJsonData({
-        sessionId,
+      await scope.dataProcessor({
         data,
+        request,
+        reply,
+        sseDispatcher: (callbackData) =>
+          sseSendJsonData({
+            sessionId,
+            data: callbackData,
+          }),
       });
-      if (scope.successRedirectPath) {
-        return reply.redirect(scope.successRedirectPath);
-      }
-      return reply.send(data);
+      return;
     } catch (e) {
       const defaultErrorMessage = "Failed to get user data";
       const isInstanceOfError = e instanceof Error;
-      const errorObject = {
-        error: isInstanceOfError ? e.message : defaultErrorMessage,
-      };
       const errorInstance = isInstanceOfError
         ? e
         : new Error(defaultErrorMessage);
-      if (scope.errorProcessor) {
-        await scope.errorProcessor({
-          error: errorInstance,
-          request,
-          reply,
-          sseDispatcher: (callbackData) =>
-            sseSendJsonData({
-              sessionId,
-              data: callbackData,
-            }),
-        });
-        return;
-      }
-      sseSendJsonData({
-        sessionId,
-        data: errorObject,
+      await scope.errorProcessor({
+        error: errorInstance,
+        request,
+        reply,
+        sseDispatcher: (callbackData) =>
+          sseSendJsonData({
+            sessionId,
+            data: callbackData,
+          }),
       });
-      if (scope.failureRedirectPath) {
-        scope.setFailureException(errorInstance);
-        return reply.redirect(scope.failureRedirectPath);
-      }
-      return reply.code(400).send(errorObject);
+      return;
     }
   });
 }
