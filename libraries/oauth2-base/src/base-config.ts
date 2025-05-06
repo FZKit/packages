@@ -108,6 +108,7 @@ export class OAuth2BaseConfigFZKitPlugin extends FZKitPlugin<
   ): Promise<void> {
     scope.applicationUrl = options.applicationUrl;
     scope.dataProcessor = options.dataProcessor;
+    scope.errorProcessor = options.errorProcessor;
     scope.setFailureException = (exception: Error) => {
       scope.failureException = exception;
     };
