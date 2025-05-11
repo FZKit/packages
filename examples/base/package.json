@@ -1,20 +1,20 @@
 {
-	"name": "base-example",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.ts",
-	"type": "module",
-	"scripts": {
-		"dev": "tsx --watch index.ts"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"dependencies": {
-		"@fzkit/base": "workspace:*",
-		"fastify": "~5.3.2"
-	},
-	"devDependencies": {
-		"tsx": "~4.19.2"
-	}
+  "name": "base-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --watch index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fzkit/base": "workspace:*",
+    "fastify": "~5.3.2"
+  },
+  "devDependencies": {
+    "tsx": "~4.19.2"
+  }
 }

@@ -1,9 +1,6 @@
 export function createPageTemplate(
   body: string,
-  {
-    documentTitle,
-    documentLang,
-  }: { documentTitle: string; head?: string; documentLang: string }
+  { documentTitle, documentLang }: { documentTitle: string; head?: string; documentLang: string },
 ) {
   return /*html*/ `
     <html lang="${documentLang}">

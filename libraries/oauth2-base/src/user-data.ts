@@ -1,4 +1,4 @@
-import type { Prettify } from "./type-utilities";
+import type { Prettify } from './type-utilities';
 
 export type BaseUserData<T extends string> = Prettify<{
   provider: T;
@@ -6,6 +6,6 @@ export type BaseUserData<T extends string> = Prettify<{
   data: Record<string, any>;
 }>;
 
-export type GoogleUserData = BaseUserData<"google">;
+export type GoogleUserData = BaseUserData<'google'>;
 
 export type UserData = GoogleUserData;
