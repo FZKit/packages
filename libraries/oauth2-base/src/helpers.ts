@@ -1,8 +1,8 @@
-import type { OAuth2Namespace } from "@fastify/oauth2";
-import type { FastifyInstance, FastifyRequest } from "fastify";
-import type { OAuth2BaseConfigInstance } from "./base-config";
-import { sessionClients } from "./globals";
-import type { UserData } from "./user-data";
+import type { OAuth2Namespace } from '@fastify/oauth2';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { OAuth2BaseConfigInstance } from './base-config';
+import { sessionClients } from './globals';
+import type { UserData } from './user-data';
 
 export function sseSendJsonData({
   sessionId,
@@ -18,7 +18,9 @@ export function sseSendJsonData({
     const channel = sessionClients.get(sessionId)!;
     channel.write(`data: ${JSON.stringify(data)}\n\n`);
     if (close) {
+      channel.write('event: close\n\n');
       channel.end();
+      sessionClients.delete(sessionId);
     }
   }
 }
@@ -29,7 +31,7 @@ export function setupStartRedirect<T extends FastifyInstance>(
     startRedirectPath: string;
     cookiePath: string;
     namespace: keyof T;
-  }
+  },
 ) {
   scope.get<{ Params: { sessionId: string } }>(
     `${options.startRedirectPath}/:sessionId`,
@@ -40,20 +42,20 @@ export function setupStartRedirect<T extends FastifyInstance>(
       }
       const uri = await namespace.generateAuthorizationUri(request, reply);
       reply
-        .setCookie("session_id", request.params.sessionId, {
+        .setCookie('session_id', request.params.sessionId, {
           httpOnly: true,
-          sameSite: "lax",
+          sameSite: 'lax',
           path: options.cookiePath,
         })
         .redirect(`${uri}&session_id=${request.params.sessionId}`);
-    }
+    },
   );
 }
 
 export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
   scope: T,
   callback: (request: FastifyRequest) => Promise<UserData>,
-  options: { callbackPath: string; cookiePath: string }
+  options: { callbackPath: string; cookiePath: string },
 ) {
   scope.get(options.callbackPath, async (request, reply) => {
     const sessionId = request.cookies.session_id;
@@ -72,11 +74,9 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
       });
       return;
     } catch (e) {
-      const defaultErrorMessage = "Failed to get user data";
+      const defaultErrorMessage = 'Failed to get user data';
       const isInstanceOfError = e instanceof Error;
-      const errorInstance = isInstanceOfError
-        ? e
-        : new Error(defaultErrorMessage);
+      const errorInstance = isInstanceOfError ? e : new Error(defaultErrorMessage);
       await scope.errorProcessor({
         error: errorInstance,
         request,
