@@ -63,10 +63,11 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
         data,
         request,
         reply,
-        sseDispatcher: (callbackData) =>
+        sseDispatcher: (callbackData, close = false) =>
           sseSendJsonData({
             sessionId,
             data: callbackData,
+            close,
           }),
       });
       return;
@@ -80,10 +81,11 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
         error: errorInstance,
         request,
         reply,
-        sseDispatcher: (callbackData) =>
+        sseDispatcher: (callbackData, close = false) =>
           sseSendJsonData({
             sessionId,
             data: callbackData,
+            close,
           }),
       });
       return;

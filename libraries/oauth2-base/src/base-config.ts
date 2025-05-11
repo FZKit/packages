@@ -51,7 +51,7 @@ interface CommonOptions {
     data: UserData;
     request: FastifyRequest;
     reply: FastifyReply;
-    sseDispatcher: (data: Record<string, unknown>) => void;
+    sseDispatcher: (data: Record<string, unknown>, close?: boolean) => void;
   }) => Promise<void>;
   errorProcessor: ({
     error,
