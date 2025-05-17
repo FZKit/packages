@@ -18,7 +18,7 @@ export interface AppleOAuthUserFirstAccess {
 
 export interface AppleOAuth2PluginInstance extends FastifyInstance, OAuth2BaseConfigInstance {
   appleOAuth2: OAuth2Namespace;
-  onFirstAccess: (data: Record<string, string>) => Promise<void>;
+  onFirstAccess: (data: AppleOAuthUserFirstAccess) => Promise<void>;
 }
 
 export interface AppleOAuth2PluginOptions {
