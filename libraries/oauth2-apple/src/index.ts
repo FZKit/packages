@@ -10,6 +10,12 @@ import {
 import { getClientSecret, verifyIdToken } from 'apple-signin-auth';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
+export interface AppleOAuthUserFirstAccess {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 export interface AppleOAuth2PluginInstance extends FastifyInstance, OAuth2BaseConfigInstance {
   appleOAuth2: OAuth2Namespace;
   onFirstAccess: (data: Record<string, string>) => Promise<void>;
@@ -110,11 +116,21 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
       code: string;
       state: string;
       error: string;
-      user?: Record<string, string>;
+      user?: {
+        name: {
+          firstName: string;
+          lastName: string;
+        };
+        email: string;
+      };
     };
     if (user) {
       try {
-        await scope.onFirstAccess(user);
+        await scope.onFirstAccess({
+          firstName: user.name.firstName,
+          lastName: user.name.lastName,
+          email: user.email,
+        });
       } catch (e) {
         scope.log.error(e);
       }
