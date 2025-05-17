@@ -1,18 +1,16 @@
-import oauthPlugin, { type OAuth2Namespace } from "@fastify/oauth2";
-import { httpClient } from "@fzkit/base/http-client";
-import { FZKitPlugin, createFastifyPlugin } from "@fzkit/base/plugin";
+import oauthPlugin, { type OAuth2Namespace } from '@fastify/oauth2';
+import { httpClient } from '@fzkit/base/http-client';
+import { FZKitPlugin, createFastifyPlugin } from '@fzkit/base/plugin';
 import {
   type GoogleUserData,
   OAuth2BaseConfigFZKitPlugin,
   type OAuth2BaseConfigInstance,
   callbackExecutor,
   setupStartRedirect,
-} from "@fzkit/oauth2-base";
-import type { FastifyInstance, FastifyRequest } from "fastify";
+} from '@fzkit/oauth2-base';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 
-export interface GoogleOAuth2PluginInstance
-  extends FastifyInstance,
-    OAuth2BaseConfigInstance {
+export interface GoogleOAuth2PluginInstance extends FastifyInstance, OAuth2BaseConfigInstance {
   googleOAuth2: OAuth2Namespace;
 }
 
@@ -35,20 +33,19 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
 
   protected plugin(
     scope: GoogleOAuth2PluginInstance,
-    options: GoogleOAuth2PluginOptions
+    options: GoogleOAuth2PluginOptions,
   ): Promise<void> {
     const callbackUri = `${scope.applicationUrl}${
-      options.callbackPath || "/oauth2/google/callback"
+      options.callbackPath || '/oauth2/google/callback'
     }`;
-    const startRedirectPath =
-      options.startRedirectPath || "/oauth2/google/login";
-    const cookiePath = options.cookiePath || "/oauth2";
+    const startRedirectPath = options.startRedirectPath || '/oauth2/google/login';
+    const cookiePath = options.cookiePath || '/oauth2';
     options.startRedirectPath = startRedirectPath;
     options.cookiePath = cookiePath;
     this.registerClient(scope, { ...options, callbackUri });
     setupStartRedirect(scope, {
       cookiePath: options.cookiePath,
-      namespace: "googleOAuth2",
+      namespace: 'googleOAuth2',
       startRedirectPath: options.startRedirectPath,
     });
     callbackExecutor(scope, (request) => this.setupCallback(scope, request), {
@@ -60,10 +57,10 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
 
   private registerClient(
     scope: GoogleOAuth2PluginInstance,
-    options: GoogleOAuth2PluginOptions & { callbackUri: string }
+    options: GoogleOAuth2PluginOptions & { callbackUri: string },
   ) {
     scope.register(oauthPlugin, {
-      name: "googleOAuth2",
+      name: 'googleOAuth2',
       scope: options.scope,
       credentials: {
         client: {
@@ -82,22 +79,18 @@ class GoogleOAuth2FZKitPlugin extends FZKitPlugin<
 
   private async setupCallback(
     scope: GoogleOAuth2PluginInstance,
-    request: FastifyRequest
-  ): Promise<{ parsed: GoogleUserData; raw: unknown }> {
-    const { token } =
-      await scope.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
-    const response = await httpClient.get(
-      "https://www.googleapis.com/oauth2/v2/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${token.access_token}`,
-        },
-      }
-    );
+    request: FastifyRequest,
+  ): Promise<GoogleUserData> {
+    const { token } = await scope.googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(request);
+    const response = await httpClient.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${token.access_token}`,
+      },
+    });
     const rawData = await response.json();
     return {
-      parsed: { basicInfo: rawData, provider: "google" } as GoogleUserData,
-      raw: rawData,
+      data: rawData,
+      provider: 'google',
     };
   }
 }
