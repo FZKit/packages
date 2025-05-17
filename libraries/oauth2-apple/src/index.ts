@@ -33,7 +33,7 @@ export interface AppleOAuth2PluginOptions {
   startRedirectPath?: string;
   callbackPath?: string;
   cookiePath?: string;
-  onFirstAccess: (data: Record<string, string>) => Promise<void>;
+  onFirstAccess: (data: AppleOAuthUserFirstAccess) => Promise<void>;
 }
 
 class AppleOAuth2FZKitPlugin extends FZKitPlugin<
