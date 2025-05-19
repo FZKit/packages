@@ -143,6 +143,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
         });
       } catch (e) {
         scope.log.error(e);
+        scope.log.debug(user);
       }
     }
     if (!state) {
