@@ -56,9 +56,9 @@ export function setupStartRedirect<T extends FastifyInstance>(
 export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
   scope: T,
   callback: (request: FastifyRequest) => Promise<UserData>,
-  options: { callbackPath: string; cookiePath: string },
+  options: { callbackPath: string; cookiePath: string; method?: 'post' | 'get' },
 ) {
-  scope.get(options.callbackPath, async (request, reply) => {
+  scope[options.method ?? 'get'](options.callbackPath, async (request, reply) => {
     const sessionId = request.cookies.session_id;
     try {
       const data = await callback(request);
