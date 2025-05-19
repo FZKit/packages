@@ -53,6 +53,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
     const cookiePath = options.cookiePath || '/oauth2';
     options.startRedirectPath = startRedirectPath;
     options.cookiePath = cookiePath;
+    scope.onFirstAccess = options.onFirstAccess;
     this.registerClient(scope, { ...options, callbackUri });
     setupStartRedirect(scope, {
       cookiePath: options.cookiePath,
