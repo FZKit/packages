@@ -88,6 +88,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
     });
     scope.register(oauthPlugin, {
       name: 'appleOAuth2',
+      scope: options.scope,
       credentials: {
         client: {
           id: options.credentials.clientId,
