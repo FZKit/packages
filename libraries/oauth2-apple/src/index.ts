@@ -58,6 +58,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
       cookiePath: options.cookiePath,
       namespace: 'appleOAuth2',
       startRedirectPath: options.startRedirectPath,
+      cookieSameSiteNone: true,
     });
     callbackExecutor(
       scope,

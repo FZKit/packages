@@ -31,6 +31,7 @@ export function setupStartRedirect<T extends FastifyInstance>(
     startRedirectPath: string;
     cookiePath: string;
     namespace: keyof T;
+    cookieSameSiteNone?: boolean;
   },
 ) {
   scope.get<{ Params: { sessionId: string } }>(
@@ -44,7 +45,8 @@ export function setupStartRedirect<T extends FastifyInstance>(
       reply
         .setCookie('session_id', request.params.sessionId, {
           httpOnly: true,
-          sameSite: 'lax',
+          sameSite: options.cookieSameSiteNone ? 'none' : 'lax',
+          secure: options.cookieSameSiteNone,
           path: options.cookiePath,
         })
         .redirect(`${uri}&session_id=${request.params.sessionId}`);
