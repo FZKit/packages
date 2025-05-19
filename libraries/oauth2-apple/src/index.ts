@@ -113,7 +113,9 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
     scope: AppleOAuth2PluginInstance;
     clientId: string;
   }): Promise<AppleUserData> {
-    const { code, state, error, user } = request.body as {
+    const data = (
+      (request.body as Record<string, unknown>).code ? request.body : request.query
+    ) as {
       code: string;
       state: string;
       error: string;
@@ -125,6 +127,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
         email: string;
       };
     };
+    const { code, state, error, user } = data;
     if (user) {
       try {
         await scope.onFirstAccess({
