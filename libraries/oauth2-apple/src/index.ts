@@ -125,21 +125,16 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
       code: string;
       state: string;
       error: string;
-      user?: {
-        name: {
-          firstName: string;
-          lastName: string;
-        };
-        email: string;
-      };
+      user?: string;
     };
     const { code, state, error, user } = data;
-    if (user) {
+    const parsedUser = user ? JSON.parse(user) : null;
+    if (parsedUser) {
       try {
         await scope.onFirstAccess({
-          firstName: user.name.firstName,
-          lastName: user.name.lastName,
-          email: user.email,
+          firstName: parsedUser.name.firstName,
+          lastName: parsedUser.name.lastName,
+          email: parsedUser.email,
         });
       } catch (e) {
         scope.log.error(e);
