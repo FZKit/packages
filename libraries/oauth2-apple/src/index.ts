@@ -70,6 +70,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
       {
         callbackPath: new URL(callbackUri).pathname,
         cookiePath: options.cookiePath,
+        method: 'post',
       },
     );
     return Promise.resolve();
