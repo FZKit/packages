@@ -88,6 +88,7 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
       const defaultErrorMessage = 'Failed to get user data';
       const isInstanceOfError = e instanceof Error;
       const errorInstance = isInstanceOfError ? e : new Error(defaultErrorMessage);
+      scope.log.error(errorInstance);
       await scope.errorProcessor({
         error: errorInstance,
         request,
