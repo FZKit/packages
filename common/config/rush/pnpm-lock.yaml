@@ -14,8 +14,8 @@ importers:
         specifier: workspace:*
         version: link:../../libraries/base
       fastify:
-        specifier: ~5.3.2
-        version: 5.3.3
+        specifier: ~5.6.2
+        version: 5.6.2
     devDependencies:
       tsx:
         specifier: ~4.19.2
@@ -33,8 +33,8 @@ importers:
         specifier: workspace:*
         version: link:../../libraries/oauth2-google
       fastify:
-        specifier: ~5.3.2
-        version: 5.3.3
+        specifier: ~5.6.2
+        version: 5.6.2
     devDependencies:
       tsx:
         specifier: ~4.19.2
@@ -43,8 +43,8 @@ importers:
   ../../libraries/base:
     dependencies:
       fastify:
-        specifier: ~5.3.2
-        version: 5.3.3
+        specifier: ~5.6.2
+        version: 5.6.2
       fastify-plugin:
         specifier: ~5.0.1
         version: 5.0.1
@@ -74,8 +74,8 @@ importers:
         specifier: ~1.7.8
         version: 1.7.9
       fastify:
-        specifier: ~5.3.2
-        version: 5.3.3
+        specifier: ~5.6.2
+        version: 5.6.2
     devDependencies:
       tsup:
         specifier: ~8.3.6
@@ -90,8 +90,8 @@ importers:
         specifier: workspace:*
         version: link:../base
       fastify:
-        specifier: ~5.3.2
-        version: 5.3.3
+        specifier: ~5.6.2
+        version: 5.6.2
     devDependencies:
       tsup:
         specifier: ~8.3.6
@@ -109,8 +109,8 @@ importers:
         specifier: workspace:*
         version: link:../oauth2-base
       fastify:
-        specifier: ~5.3.2
-        version: 5.3.3
+        specifier: ~5.6.2
+        version: 5.6.2
     devDependencies:
       tsup:
         specifier: ~8.3.6
@@ -701,6 +701,10 @@ packages:
       '@jridgewell/sourcemap-codec': 1.5.0
     dev: true
 
+  /@pinojs/redact@0.4.0:
+    resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
+    dev: false
+
   /@pkgjs/parseargs@0.11.0:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
@@ -1161,11 +1165,6 @@ packages:
       fast-decode-uri-component: 1.0.1
     dev: false
 
-  /fast-redact@3.5.0:
-    resolution: {integrity: sha512-dwsoQlS7h9hMeYUq1W++23NDcBLV4KqONnITDV9DjfS3q1SgDGVrBdvvTLUotWtPSD7asWDV9/CmsZPy8Hf70A==}
-    engines: {node: '>=6'}
-    dev: false
-
   /fast-uri@3.0.6:
     resolution: {integrity: sha512-Atfo14OibSv5wAp4VWNsFYE1AchQRTv9cBGWET4pZWHzYshFSS9NQI6I57rdKn9croWVMbYFbLhJ+yJvmZIIHw==}
     dev: false
@@ -1174,8 +1173,8 @@ packages:
     resolution: {integrity: sha512-HCxs+YnRaWzCl+cWRYFnHmeRFyR5GVnJTAaCJQiYzQSDwK9MgJdyAsuL3nh0EWRCYMgQ5MeziymvmAhUHYHDUQ==}
     dev: false
 
-  /fastify@5.3.3:
-    resolution: {integrity: sha512-nCBiBCw9q6jPx+JJNVgO8JVnTXeUyrGcyTKPQikRkA/PanrFcOIo4R+ZnLeOLPZPGgzjomqfVarzE0kYx7qWiQ==}
+  /fastify@5.6.2:
+    resolution: {integrity: sha512-dPugdGnsvYkBlENLhCgX8yhyGCsCPrpA8lFWbTNU428l+YOnLgYHR69hzV8HWPC79n536EqzqQtvhtdaCE0dKg==}
     dependencies:
       '@fastify/ajv-compiler': 4.0.2
       '@fastify/error': 4.1.0
@@ -1186,7 +1185,7 @@ packages:
       fast-json-stringify: 6.0.1
       find-my-way: 9.3.0
       light-my-request: 6.6.0
-      pino: 9.6.0
+      pino: 10.1.0
       process-warning: 5.0.0
       rfdc: 1.4.1
       secure-json-parse: 4.0.0
@@ -1487,16 +1486,16 @@ packages:
     resolution: {integrity: sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==}
     dev: false
 
-  /pino@9.6.0:
-    resolution: {integrity: sha512-i85pKRCt4qMjZ1+L7sy2Ag4t1atFcdbEt76+7iRJn1g2BvsnRMGu9p8pivl9fs63M2kF/A0OacFZhTub+m/qMg==}
+  /pino@10.1.0:
+    resolution: {integrity: sha512-0zZC2ygfdqvqK8zJIr1e+wT1T/L+LF6qvqvbzEQ6tiMAoTqEVK9a1K3YRu8HEUvGEvNqZyPJTtb2sNIoTkB83w==}
     hasBin: true
     dependencies:
+      '@pinojs/redact': 0.4.0
       atomic-sleep: 1.0.0
-      fast-redact: 3.5.0
       on-exit-leak-free: 2.1.2
       pino-abstract-transport: 2.0.0
       pino-std-serializers: 7.0.0
-      process-warning: 4.0.1
+      process-warning: 5.0.0
       quick-format-unescaped: 4.0.4
       real-require: 0.2.0
       safe-stable-stringify: 2.5.0

@@ -42,7 +42,7 @@
     "tsup": "~8.3.6"
   },
   "dependencies": {
-    "fastify": "~5.3.2",
+    "fastify": "~5.6.2",
     "@fzkit/base": "workspace:*",
     "@fastify/oauth2": "~8.1.2",
     "@fzkit/oauth2-base": "workspace:*",
