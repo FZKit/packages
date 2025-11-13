@@ -31,6 +31,7 @@ export function setupStartRedirect<T extends FastifyInstance>(
     startRedirectPath: string;
     cookiePath: string;
     namespace: keyof T;
+    cookieSameSiteNone?: boolean;
   },
 ) {
   scope.get<{ Params: { sessionId: string } }>(
@@ -41,13 +42,22 @@ export function setupStartRedirect<T extends FastifyInstance>(
         throw new Error(`Namespace ${namespace} not found`);
       }
       const uri = await namespace.generateAuthorizationUri(request, reply);
-      reply
-        .setCookie('session_id', request.params.sessionId, {
+      reply.setCookie('session_id', request.params.sessionId, {
+        httpOnly: true,
+        sameSite: options.cookieSameSiteNone ? 'none' : 'lax',
+        secure: options.cookieSameSiteNone,
+        path: options.cookiePath,
+      });
+      const searchParams = new URLSearchParams(uri.split('?')[1]);
+      if (options.cookieSameSiteNone) {
+        reply.setCookie('oauth2-redirect-state', searchParams.get('state') ?? '', {
           httpOnly: true,
-          sameSite: 'lax',
+          sameSite: options.cookieSameSiteNone ? 'none' : 'lax',
+          secure: options.cookieSameSiteNone,
           path: options.cookiePath,
-        })
-        .redirect(`${uri}&session_id=${request.params.sessionId}`);
+        });
+      }
+      reply.redirect(`${uri}&session_id=${request.params.sessionId}`);
     },
   );
 }
@@ -56,9 +66,9 @@ export function setupStartRedirect<T extends FastifyInstance>(
 export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
   scope: T,
   callback: (request: FastifyRequest) => Promise<UserData>,
-  options: { callbackPath: string; cookiePath: string },
+  options: { callbackPath: string; cookiePath: string; method?: 'post' | 'get' },
 ) {
-  scope.get(options.callbackPath, async (request, reply) => {
+  scope[options.method ?? 'get'](options.callbackPath, async (request, reply) => {
     const sessionId = request.cookies.session_id;
     try {
       const data = await callback(request);
@@ -78,6 +88,7 @@ export function callbackExecutor<T extends OAuth2BaseConfigInstance>(
       const defaultErrorMessage = 'Failed to get user data';
       const isInstanceOfError = e instanceof Error;
       const errorInstance = isInstanceOfError ? e : new Error(defaultErrorMessage);
+      scope.log.error(errorInstance);
       await scope.errorProcessor({
         error: errorInstance,
         request,

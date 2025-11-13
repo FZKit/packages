@@ -18,7 +18,7 @@ export interface AppleOAuthUserFirstAccess {
 
 export interface AppleOAuth2PluginInstance extends FastifyInstance, OAuth2BaseConfigInstance {
   appleOAuth2: OAuth2Namespace;
-  onFirstAccess: (data: Record<string, string>) => Promise<void>;
+  onFirstAccess: (data: AppleOAuthUserFirstAccess) => Promise<void>;
 }
 
 export interface AppleOAuth2PluginOptions {
@@ -33,7 +33,7 @@ export interface AppleOAuth2PluginOptions {
   startRedirectPath?: string;
   callbackPath?: string;
   cookiePath?: string;
-  onFirstAccess: (data: Record<string, string>) => Promise<void>;
+  onFirstAccess: (data: AppleOAuthUserFirstAccess) => Promise<void>;
 }
 
 class AppleOAuth2FZKitPlugin extends FZKitPlugin<
@@ -53,11 +53,13 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
     const cookiePath = options.cookiePath || '/oauth2';
     options.startRedirectPath = startRedirectPath;
     options.cookiePath = cookiePath;
+    scope.onFirstAccess = options.onFirstAccess;
     this.registerClient(scope, { ...options, callbackUri });
     setupStartRedirect(scope, {
       cookiePath: options.cookiePath,
       namespace: 'appleOAuth2',
       startRedirectPath: options.startRedirectPath,
+      cookieSameSiteNone: true,
     });
     callbackExecutor(
       scope,
@@ -70,6 +72,7 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
       {
         callbackPath: new URL(callbackUri).pathname,
         cookiePath: options.cookiePath,
+        method: 'post',
       },
     );
     return Promise.resolve();
@@ -88,6 +91,11 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
     });
     scope.register(oauthPlugin, {
       name: 'appleOAuth2',
+      scope: options.scope,
+      cookie: {
+        sameSite: 'none',
+        secure: true,
+      },
       credentials: {
         client: {
           id: options.credentials.clientId,
@@ -112,27 +120,26 @@ class AppleOAuth2FZKitPlugin extends FZKitPlugin<
     scope: AppleOAuth2PluginInstance;
     clientId: string;
   }): Promise<AppleUserData> {
-    const { code, state, error, user } = request.body as {
+    const data = (
+      (request.body as Record<string, unknown>).code ? request.body : request.query
+    ) as {
       code: string;
       state: string;
       error: string;
-      user?: {
-        name: {
-          firstName: string;
-          lastName: string;
-        };
-        email: string;
-      };
+      user?: string;
     };
-    if (user) {
+    const { code, state, error, user } = data;
+    const parsedUser = user ? JSON.parse(user) : null;
+    if (parsedUser) {
       try {
         await scope.onFirstAccess({
-          firstName: user.name.firstName,
-          lastName: user.name.lastName,
-          email: user.email,
+          firstName: parsedUser.name.firstName,
+          lastName: parsedUser.name.lastName,
+          email: parsedUser.email,
         });
       } catch (e) {
         scope.log.error(e);
+        scope.log.debug(user);
       }
     }
     if (!state) {
