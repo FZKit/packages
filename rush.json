@@ -351,12 +351,21 @@
       "tags": ["pkg"]
     },
     {
+      "packageName": "@fzkit/print-routes",
+      "projectFolder": "libraries/print-routes",
+      "tags": ["pkg"]
+    },
+    {
       "packageName": "base-example",
       "projectFolder": "examples/base"
     },
     {
       "packageName": "oauth2-clients-example",
       "projectFolder": "examples/oauth2-clients"
+    },
+    {
+      "packageName": "print-routes-example",
+      "projectFolder": "examples/print-routes"
     }
     // {
     //   /**

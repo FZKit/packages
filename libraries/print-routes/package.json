@@ -1,0 +1,44 @@
+{
+  "name": "@fzkit/print-routes",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup"
+  },
+  "tsup": {
+    "entry": ["src/index.ts"],
+    "clean": true,
+    "dts": true,
+    "format": ["esm", "cjs"],
+    "treeshake": true
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tsup": "~8.3.6"
+  },
+  "dependencies": {
+    "fastify": "~5.6.2",
+    "@fzkit/base": "workspace:*"
+  }
+}
