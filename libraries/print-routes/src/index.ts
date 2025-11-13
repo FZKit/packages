@@ -3,38 +3,57 @@ import type { FastifyInstance } from 'fastify';
 
 export interface PrintRoutesInstance extends FastifyInstance {}
 
-type Route = { name: string; methods: Array<string>; routes?: Routes };
+type HTTPMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+
+type Route = {
+  name: string;
+  methods: Array<string>;
+  routes?: Routes;
+};
 type Routes = Array<Route>;
 
-export class PrintRoutesPlugin extends FZKitPlugin<PrintRoutesInstance> {
+export interface PrintRoutesOptions {
+  methodsToHide?: HTTPMethods[];
+  // biome-ignore lint/suspicious/noExplicitAny: logger can have any signature
+  logger?: (...args: any[]) => void;
+}
+
+export class PrintRoutesPlugin extends FZKitPlugin<PrintRoutesInstance, PrintRoutesOptions> {
   override encapsulate = false;
 
   private routes!: Route;
 
-  protected override async plugin(app: PrintRoutesInstance): Promise<void> {
+  protected override async plugin(
+    scope: PrintRoutesInstance,
+    { methodsToHide = ['HEAD', 'OPTIONS'], logger = console.log }: PrintRoutesOptions,
+  ): Promise<void> {
     this.routes = {
       name: 'Routes',
       methods: [],
       routes: [],
     };
 
-    app.addHook('onRoute', (route) => {
-      this.addRoute(route);
+    scope.addHook('onRoute', (route) => {
+      this.addRoute(methodsToHide, route);
     });
 
-    app.addHook('onReady', () => {
+    scope.addHook('onReady', () => {
       this.sortRoutes();
-      this.printRoute();
+      this.printRoute(logger);
     });
   }
 
-  private addRoute(route: { url: string; method: string | Array<string> }, father = this.routes) {
+  private addRoute(
+    methodsToHide: Required<PrintRoutesOptions>['methodsToHide'],
+    route: { url: string; method: string | Array<string> },
+    father = this.routes,
+  ) {
     const [routeName, ...rest] = route.url.startsWith('/')
       ? route.url.replace('/', '').split('/')
       : route.url.split('/');
     const currentMethods = Array.isArray(route.method) ? route.method : [route.method];
 
-    if (currentMethods.some((method) => ['HEAD', 'OPTIONS'].includes(method))) {
+    if (currentMethods.some((method) => methodsToHide.includes(method as HTTPMethods))) {
       return;
     }
 
@@ -70,6 +89,7 @@ export class PrintRoutesPlugin extends FZKitPlugin<PrintRoutesInstance> {
       const path = rest.join('/');
       if (path) {
         this.addRoute(
+          methodsToHide,
           { url: path, method: route.method },
           father.routes.find((r) => r.name === routeName),
         );
@@ -87,16 +107,22 @@ export class PrintRoutesPlugin extends FZKitPlugin<PrintRoutesInstance> {
     }
   }
 
-  private printRoute(route = this.routes, isLast = true, deep = 0, prefix = '') {
+  private printRoute(
+    logger: Required<PrintRoutesOptions>['logger'],
+    route = this.routes,
+    isLast = true,
+    deep = 0,
+    prefix = '',
+  ) {
     const nextPrefix = prefix.replaceAll(' ├──', ' │  ').replaceAll(' └──', '    ');
     const displayPrefix = deep === 0 ? '' : `${nextPrefix}${isLast ? ' └──' : ' ├──'}`;
     if (route) {
       const stringMethods = route.methods.length ? `(${route.methods.join(', ')})` : '';
 
-      console.log(displayPrefix, deep === 0 ? route.name : `/${route.name}`, stringMethods);
+      logger(displayPrefix, deep === 0 ? route.name : `/${route.name}`, stringMethods);
 
       if (!this.routes.routes?.length) {
-        console.log(
+        logger(
           ' ├── No routes found',
           '\n └── Make sure you have registered the PrintRoutesPlugin before registering the routes',
         );
@@ -105,6 +131,7 @@ export class PrintRoutesPlugin extends FZKitPlugin<PrintRoutesInstance> {
       for (const index in route.routes) {
         if (route.routes) {
           this.printRoute(
+            logger,
             route.routes[+index],
             +index === route.routes.length - 1,
             deep + 1,

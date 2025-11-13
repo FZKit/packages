@@ -9,6 +9,9 @@ export class BaseExamplePlugin extends FZKitPlugin<BaseExamplePluginInstance> {
     scope: BaseExamplePluginInstance,
     options?: Record<never, never> | undefined,
   ): Promise<void> {
+    scope.options('/', async () => {
+      return { hello: 'world' };
+    });
     scope.get('/', async () => {
       return { hello: 'world' };
     });
@@ -47,6 +50,10 @@ export class BaseExamplePlugin extends FZKitPlugin<BaseExamplePluginInstance> {
   }
 }
 const fastify = Fastify({ logger: true });
+fastify.register(createFastifyPlugin(PrintRoutesPlugin), {
+  methodsToHide: ['DELETE'],
+  logger: (...args) => console.log('=> ', ...args),
+});
 fastify.register(createFastifyPlugin(PrintRoutesPlugin));
 fastify.register(createFastifyPlugin(BaseExamplePlugin));
 
